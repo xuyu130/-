@@ -708,6 +708,7 @@ def view_course_students(id):
         return redirect(url_for('courses'))
     
     enrolled_students = []
+    enrollments_list = []  # 创建一个enrollments列表用于传递给模板
     for e in in_memory_data['enrollments']:
         if e['course_id'] == id:
             student = find_item_by_id('students', e['student_id'])
@@ -716,9 +717,12 @@ def view_course_students(id):
                 student_data['exam_score'] = e['exam_score']
                 student_data['performance_score'] = e['performance_score']
                 enrolled_students.append(student_data)
+                # 同时保存enrollment信息
+                enrollment_data = copy.deepcopy(e)
+                enrollments_list.append(enrollment_data)
     
     enrolled_students = sorted(enrolled_students, key=lambda x: x['name'])
-    return render_template('course_students.html', course=course, students=enrolled_students)
+    return render_template('course_students.html', course=course, students=enrolled_students, enrollments=enrollments_list)
 
 
 # --- 学生选课与成绩管理 (Enrollments) ---
@@ -791,6 +795,7 @@ def edit_enrollment(enrollment_id):
         return redirect(url_for('students'))
     
     student_id = enrollment['student_id']
+    course_id = enrollment['course_id']  # 获取课程ID
     student = find_item_by_id('students', student_id)
     courses = sorted(in_memory_data['courses'], key=lambda x: x['name'])
 
@@ -798,6 +803,7 @@ def edit_enrollment(enrollment_id):
         new_course_id = int(request.form['course_id'])
         exam_score = request.form['exam_score']
         performance_score = request.form['performance_score']
+        referrer = request.form.get('referrer', '')  # 获取referrer参数
 
         if not new_course_id:
             flash('请选择课程！', 'danger')
@@ -813,10 +819,21 @@ def edit_enrollment(enrollment_id):
                 })
                 g.data_modified = True # 标记数据已修改
                 flash('选课及成绩更新成功！', 'success')
-                return redirect(url_for('enrollments', student_id=student_id))
+                
+                # 根据referrer决定重定向
+                if referrer:
+                    return redirect(referrer)
+                else:
+                    # 默认重定向到学生选课列表
+                    return redirect(url_for('enrollments', student_id=student_id))
     
-    return render_template('add_edit_enrollment.html', student=student, courses=courses, enrollment=enrollment)
-
+    # GET请求时也传递referrer到模板
+    referrer = request.args.get('referrer', '')
+    return render_template('add_edit_enrollment.html', 
+                         student=student, 
+                         courses=courses, 
+                         enrollment=enrollment,
+                         referrer=referrer)
 @app.route('/enrollments/delete/<int:enrollment_id>', methods=['POST'])
 @teacher_or_admin_required
 def delete_enrollment(enrollment_id):
@@ -1460,7 +1477,7 @@ def delete_schedule(id):
     return redirect(url_for('schedules'))
 
 
-# --- 统计分析与辅助决策 ---
+# --- 管理员端统计分析与辅助决策 ---
 @app.route('/statistics')
 @login_required
 def statistics():
@@ -1532,6 +1549,188 @@ def statistics():
                            attendance_summary=attendance_summary,
                            avg_scores=avg_scores,
                            rp_summary=rp_summary)
+
+# --- 学生个人统计分析 ---
+@app.route('/stu_statistics')
+@student_required
+def stu_statistics():
+    """学生个人统计分析页面"""
+    if session['role'] != 'student':
+        flash('您没有权限访问此页面。', 'danger')
+        return redirect(url_for('index'))
+    
+    current_user_id = session['user_id']
+    current_user = find_item_by_id('users', current_user_id)
+    
+    if not current_user or current_user.get('student_info_id') is None:
+        flash('未找到您的学生信息，请联系管理员。', 'danger')
+        return redirect(url_for('index'))
+    
+    student_id = current_user['student_info_id']
+    student_info = find_item_by_id('students', student_id)
+    
+    if not student_info:
+        flash('未找到您的学生信息，请联系管理员。', 'danger')
+        return redirect(url_for('index'))
+    
+    # 1. 获取学生成绩数据（用于趋势分析）
+    grades_data = []
+    for e in in_memory_data['enrollments']:
+        if e['student_id'] == student_id and e['exam_score'] is not None:
+            course = find_item_by_id('courses', e['course_id'])
+            if course:
+                total_score = (e['exam_score'] + e['performance_score']) / 2 if e['performance_score'] else e['exam_score']
+                grades_data.append({
+                    'course_name': course['name'],
+                    'exam_score': e['exam_score'],
+                    'performance_score': e['performance_score'],
+                    'total_score': round(total_score, 2)
+                })
+    
+    # 2. 获取班级平均成绩（用于对比分析）
+    class_avg_scores = {}
+    for course in in_memory_data['courses']:
+        course_enrollments = [e for e in in_memory_data['enrollments'] if e['course_id'] == course['id'] and e['exam_score'] is not None]
+        if course_enrollments:
+            avg_exam = sum(e['exam_score'] for e in course_enrollments) / len(course_enrollments)
+            perf_scores = [e['performance_score'] for e in course_enrollments if e['performance_score'] is not None]
+            avg_perf = sum(perf_scores) / len(perf_scores) if perf_scores else None
+            avg_total = round((avg_exam + avg_perf) / 2, 2) if avg_perf else round(avg_exam, 2)
+            class_avg_scores[course['name']] = {
+                'avg_exam': round(avg_exam, 2),
+                'avg_perf': round(avg_perf, 2) if avg_perf else None,
+                'avg_total': avg_total
+            }
+    
+    # 3. 获取出勤数据（用于学习计划建议）
+    attendance_records = [a for a in in_memory_data['attendance'] if a['student_id'] == student_id]
+    present_count = sum(1 for a in attendance_records if a['status'] == 'present')
+    absent_count = sum(1 for a in attendance_records if a['status'] == 'absent')
+    leave_count = sum(1 for a in attendance_records if a['status'] == 'leave')
+    total_attendance = len(attendance_records)
+    attendance_rate = round((present_count / total_attendance) * 100, 2) if total_attendance > 0 else 0
+    
+    # 4. 获取奖励处分数据
+    rewards = [rp for rp in in_memory_data['rewards_punishments'] if rp['student_id'] == student_id and rp['type'] == 'reward']
+    punishments = [rp for rp in in_memory_data['rewards_punishments'] if rp['student_id'] == student_id and rp['type'] == 'punishment']
+    
+    # 5. 获取上课时间分布数据
+    # 先获取学生选修的课程
+    student_courses = []
+    for e in in_memory_data['enrollments']:
+        if e['student_id'] == student_id:
+            course = find_item_by_id('courses', e['course_id'])
+            if course:
+                student_courses.append(course['id'])
+    
+    # 获取这些课程的排课信息
+    schedule_distribution = {}
+    for schedule in in_memory_data['schedules']:
+        if schedule['course_id'] in student_courses:
+            day = schedule['day_of_week']
+            if day not in schedule_distribution:
+                schedule_distribution[day] = []
+            course = find_item_by_id('courses', schedule['course_id'])
+            schedule_distribution[day].append({
+                'start_time': schedule['start_time'],
+                'end_time': schedule['end_time'],
+                'course_name': course['name'] if course else '未知课程',
+                'location': schedule['location']
+            })
+    
+    # 6. 生成学习计划建议
+    study_recommendations = generate_study_recommendations(grades_data, attendance_records, rewards, punishments)
+    
+     # 7. 为图表准备数据（确保数据结构正确）
+    chart_data = {
+        'course_names': [grade['course_name'] for grade in grades_data],
+        'my_scores': [grade['total_score'] for grade in grades_data],
+        'class_avg_scores': []
+    }
+    
+    # 为每个课程获取班级平均分
+    for grade in grades_data:
+        course_name = grade['course_name']
+        if course_name in class_avg_scores:
+            chart_data['class_avg_scores'].append(class_avg_scores[course_name]['avg_total'])
+        else:
+            chart_data['class_avg_scores'].append(None)  # 如果没有平均分数据，用None填充
+    
+    return render_template('stu_statistics.html',
+                         student=student_info,
+                         grades_data=grades_data,
+                         class_avg_scores=class_avg_scores,
+                         attendance_rate=attendance_rate,
+                         present_count=present_count,
+                         absent_count=absent_count,
+                         leave_count=leave_count,
+                         rewards=rewards,
+                         punishments=punishments,
+                         schedule_distribution=schedule_distribution,
+                         study_recommendations=study_recommendations,
+                         chart_data=chart_data)
+def generate_study_recommendations(grades_data, attendance_records, rewards, punishments):
+    """生成学习计划建议"""
+    recommendations = []
+    
+    # 基于成绩的建议
+    if grades_data:
+        low_score_courses = [course for course in grades_data if course['total_score'] < 60]
+        if low_score_courses:
+            course_names = ", ".join([course['course_name'] for course in low_score_courses[:3]])
+            recommendations.append(f"📚 <strong>{course_names}</strong> 课程成绩较低，建议加强复习和练习")
+        
+        high_score_courses = [course for course in grades_data if course['total_score'] >= 90]
+        if high_score_courses:
+            course_names = ", ".join([course['course_name'] for course in high_score_courses[:2]])
+            recommendations.append(f"🎯 <strong>{course_names}</strong> 课程表现优秀，可以尝试挑战更高难度的内容")
+    
+    # 基于出勤的建议
+    recent_attendance = sorted(attendance_records, key=lambda x: x['date'], reverse=True)[:10]
+    recent_absences = [a for a in recent_attendance if a['status'] == 'absent']
+    
+    if len(recent_absences) >= 3:
+        recommendations.append("⚠️ 近期缺勤较多，请注意调整作息，保证上课出勤率")
+    
+    # 基于奖励处分的建议
+    if punishments:
+        recommendations.append("❗ 有处分记录，请注意遵守校规校纪，表现良好可申请撤销处分")
+    
+    if rewards:
+        recommendations.append("🏆 继续保持优秀表现，争取获得更多奖励")
+    
+    # 通用建议
+    if not recommendations:
+        recommendations.append("📊 学习状态良好，继续保持当前的学习节奏和习惯")
+    
+    recommendations.append("⏰ 建议制定每周学习计划，合理安排各科目学习时间")
+    recommendations.append("📖 定期复习已学内容，做好课前预习和课后总结")
+    
+    return recommendations
+
+@app.route('/student/courses')
+@student_required
+def student_courses():
+    # 获取当前登录的学生用户信息
+    current_user = find_item_by_id('users', session['user_id'])
+    if not current_user or not current_user.get('student_info_id'):
+        flash('您的学生信息未关联，无法查看课程。', 'danger')
+        return redirect(url_for('index'))
+    
+    student_info_id = current_user['student_info_id']
+    
+    # 获取所有课程并添加选课状态
+    all_courses = sorted(in_memory_data['courses'], key=lambda x: x['name'])
+    processed_courses = []
+    
+    for course in all_courses:
+        course_data = copy.deepcopy(course)
+        course_data['enrolled_count'] = get_enrolled_count(course['id'])
+        course_data['is_enrolled_by_current_user'] = is_student_enrolled_in_course(student_info_id, course['id'])
+        
+        processed_courses.append(course_data)
+    
+    return render_template('student_courses.html', courses=processed_courses)
 
 if __name__ == '__main__':
     print(f"\n--- Data will be stored in '{DATA_FILE}'. It will persist across server restarts. ---")

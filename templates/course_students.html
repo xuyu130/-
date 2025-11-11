@@ -1,3 +1,4 @@
+<!-- 课程管理-课程列表-查看学生 -->
 {% extends 'layout.html' %}
 
 {% block title %}课程 "{{ course.name }}" 的学生{% endblock %}
@@ -21,6 +22,9 @@
                 <th>班级</th>
                 <th>考试成绩</th>
                 <th>表现成绩</th>
+                {% if session.get('role') in ['admin', 'teacher'] %}
+                <th>操作</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
@@ -32,10 +36,21 @@
                 <td>{{ student.class_name }}</td>
                 <td>{{ student.exam_score or 'N/A' }}</td>
                 <td>{{ student.performance_score or 'N/A' }}</td>
+                {% if session.get('role') in ['admin', 'teacher'] %}
+                <td>
+                    <!-- 添加编辑成绩的链接 -->
+                    {% for enrollment in enrollments %}
+                        {% if enrollment.student_id == student.id and enrollment.course_id == course.id %}
+                            <!-- 修改这里：添加referrer参数 -->
+                            <a href="{{ url_for('edit_enrollment', enrollment_id=enrollment.id) }}?referrer={{ request.url | urlencode }}" class="btn btn-sm btn-warning">编辑成绩</a>
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                {% endif %}
             </tr>
             {% else %}
             <tr>
-                <td colspan="6" class="text-center text-muted">暂无学生选修此课程。</td>
+                <td colspan="7" class="text-center text-muted">暂无学生选修此课程。</td>
             </tr>
             {% endfor %}
         </tbody>

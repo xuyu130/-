@@ -5,6 +5,26 @@
 {% block content %}
 <h1 class="mb-4">仪表盘</h1>
 
+{% if session.get('role') == 'student' %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">快捷操作</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('student_checkin') }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> 学生签到
+                    </button>
+                </form>
+                <small class="text-muted ms-3">点击按钮完成今日签到</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="row">
     <div class="col-md-4 mb-4">
         <div class="card text-white bg-primary">

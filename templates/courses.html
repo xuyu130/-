@@ -1,3 +1,4 @@
+<!-- courses.html -->
 {% extends 'layout.html' %}
 
 {% block title %}课程管理{% endblock %}
@@ -42,13 +43,13 @@
                     {% elif session.get('role') == 'student' %}
                         {% if course.is_enrolled_by_current_user %} {# 假设后端会传递一个布尔值指示当前学生是否已选此课 #}
                             <span class="badge bg-success me-1">已选</span>
-                            <form action="{{ url_for('unenroll_course', id=course.id) }}" method="POST" class="d-inline">
+                            <form action="{{ url_for('unenroll_course', id=course.id) }}" method="POST" class="d-inline unenroll-form">
                                 <button type="submit" class="btn btn-sm btn-outline-danger">退选</button>
                             </form>
                         {% elif course.capacity is not none and course.enrolled_count >= course.capacity %} {# 课程已满 #}
                             <span class="badge bg-secondary">课程已满</span>
                         {% else %} {# 学生可以选课 #}
-                            <form action="{{ url_for('enroll_course', id=course.id) }}" method="POST" class="d-inline">
+                            <form action="{{ url_for('enroll_course', id=course.id) }}" method="POST" class="d-inline enroll-form">
                                 <button type="submit" class="btn btn-sm btn-primary">选课</button>
                             </form>
                         {% endif %}
@@ -67,14 +68,35 @@
     </table>
 </div>
 
-{# 可以添加一些JavaScript来处理删除确认 #}
+{# 添加JavaScript来处理确认对话框 #}
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // 处理删除课程确认
     const deleteForms = document.querySelectorAll('.delete-form');
     deleteForms.forEach(form => {
         form.addEventListener('submit', function(event) {
             if (!confirm('确定要删除此课程吗？此操作不可逆！')) {
+                event.preventDefault();
+            }
+        });
+    });
+    
+    // 处理选课确认
+    const enrollForms = document.querySelectorAll('.enroll-form');
+    enrollForms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!confirm('确定要选择这门课程吗？')) {
+                event.preventDefault();
+            }
+        });
+    });
+    
+    // 处理退选确认
+    const unenrollForms = document.querySelectorAll('.unenroll-form');
+    unenrollForms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!confirm('确定要退选这门课程吗？')) {
                 event.preventDefault();
             }
         });

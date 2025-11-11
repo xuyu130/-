@@ -21,7 +21,7 @@ student_management_system/
     ├── add_edit_notice.html
     ├── users.html
     └── add_edit_user.html
-    └── statistics.html
+    └── admin_statistics.html
 
 ### 进一步改进和考虑
 ## 安全性:

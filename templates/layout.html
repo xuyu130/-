@@ -1,3 +1,4 @@
+<!-- layout.html -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -59,27 +60,6 @@
         .flash-messages {
             margin-top: 1rem;
         }
-        /* Style for the check-in button in sidebar */
-        .sidebar .nav-item .btn-link {
-            color: #333; /* Default link color */
-            text-decoration: none; /* Remove underline */
-            background-color: transparent; /* No background */
-            border: none; /* No border */
-            text-align: left; /* Align text to left */
-            padding: 0.75rem 1rem; /* Match nav-link padding */
-            border-radius: 0.25rem; /* Match nav-link border-radius */
-            display: flex;
-            align-items: center;
-            width: 100%;
-        }
-        .sidebar .nav-item .btn-link:hover {
-            background-color: #e2e6ea; /* Hover background */
-            color: #333; /* Keep text color on hover */
-        }
-        .sidebar .nav-item .btn-link.active {
-            background-color: #0d6efd;
-            color: white;
-        }
         .emoji {
             margin-right: 8px;
             font-size: 1.1em;
@@ -129,13 +109,10 @@
                         <span class="emoji">📝</span>成绩查询
                     </a>
                 </li>
-                <!-- 新增的学生签到链接 -->
                 <li class="nav-item">
-                    <form action="{{ url_for('student_checkin') }}" method="POST" class="d-inline w-100">
-                        <button type="submit" class="nav-link btn btn-link text-start w-100 {% if request.endpoint == 'student_checkin' %}active{% endif %}">
-                            <span class="emoji">✅</span>学生签到
-                        </button>
-                    </form>
+                    <a class="nav-link {% if request.endpoint == 'student_courses' %}active{% endif %}" href="{{ url_for('student_courses') }}">
+                        <span class="emoji">📚</span>选课中心
+                    </a>
                 </li>
                 {% endif %}
                 {# 只有管理员和教师可见的管理模块 #}
@@ -187,18 +164,26 @@
                         <span class="emoji">👨‍👩‍👧‍👦</span>家长联系
                     </a>
                 </li>
-                {% endif %}
-
-                <li class="nav-item">
-                    <a class="nav-link {% if request.endpoint == 'notices' %}active{% endif %}" href="{{ url_for('notices') }}">
-                        <span class="emoji">📢</span>通知公告
-                    </a>
-                </li>
                 <li class="nav-item">
                     <a class="nav-link {% if request.endpoint == 'statistics' %}active{% endif %}" href="{{ url_for('statistics') }}">
                         <span class="emoji">📈</span>统计分析
                     </a>
                 </li>
+                {% endif %}
+
+                 {% if session.get('role') == 'student' %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'stu_statistics' %}active{% endif %}" href="{{ url_for('stu_statistics') }}">
+                        <span class="emoji">📈</span>统计分析
+                    </a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'notices' %}active{% endif %}" href="{{ url_for('notices') }}">
+                        <span class="emoji">📢</span>通知公告
+                    </a>
+                </li>
+                
                 {# 只有管理员可见的用户管理模块 #}
                 {% if session.get('role') == 'admin' %}
                 <li class="nav-item">
