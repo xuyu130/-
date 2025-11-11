@@ -1,0 +1,60 @@
+{% extends 'layout.html' %}
+
+{% block title %}奖励与处分管理{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">奖励与处分管理</h1>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>奖惩记录列表</h4>
+    {% if session.get('role') in ['admin', 'teacher'] %}
+    <a href="{{ url_for('add_reward_punishment') }}" class="btn btn-primary">添加奖惩记录</a>
+    {% endif %}
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>学生姓名</th>
+                <th>学号</th>
+                <th>类型</th>
+                <th>描述</th>
+                <th>日期</th>
+                {% if session.get('role') in ['admin', 'teacher'] %}
+                <th>操作</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in records %}
+            <tr>
+                <td>{{ record.student_name }}</td>
+                <td>{{ record.student_id }}</td>
+                <td>
+                    {% if record.type == 'reward' %}
+                        <span class="badge bg-success">奖励</span>
+                    {% else %}
+                        <span class="badge bg-danger">处分</span>
+                    {% endif %}
+                </td>
+                <td>{{ record.description }}</td>
+                <td>{{ record.date }}</td>
+                {% if session.get('role') in ['admin', 'teacher'] %}
+                <td>
+                    <a href="{{ url_for('edit_reward_punishment', id=record.id) }}" class="btn btn-sm btn-warning">编辑</a>
+                    <form action="{{ url_for('delete_reward_punishment', id=record.id) }}" method="POST" class="d-inline delete-form">
+                        <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                    </form>
+                </td>
+                {% endif %}
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="{% if session.get('role') in ['admin', 'teacher'] %}6{% else %}5{% endif %}" class="text-center text-muted">暂无奖励或处分记录。</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

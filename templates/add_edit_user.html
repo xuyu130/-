@@ -1,0 +1,61 @@
+<!-- templates/add_edit_user.html -->
+{% extends 'layout.html' %}
+
+{% block title %}{% if user.id %}编辑用户{% else %}添加用户{% endif %}{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{% if user.id %}编辑用户{% else %}添加用户{% endif %}</h1>
+
+<form method="POST">
+    <div class="mb-3">
+        <label for="username" class="form-label">用户名</label>
+        <input type="text" class="form-control" id="username" name="username" value="{{ user.username or '' }}" required>
+    </div>
+    <div class="mb-3">
+        <label for="password" class="form-label">密码 {% if user.id %}(留空则不修改){% endif %}</label>
+        <input type="password" class="form-control" id="password" name="password">
+    </div>
+    <div class="mb-3">
+        <label for="role" class="form-label">角色</label>
+        <select class="form-select" id="role" name="role" required onchange="toggleStudentInfo(this)">
+            <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>管理员</option>
+            <option value="teacher" {% if user.role == 'teacher' %}selected{% endif %}>教师</option>
+            <option value="student" {% if user.role == 'student' %}selected{% endif %}>学生</option>
+        </select>
+    </div>
+
+    <div class="mb-3" id="student-info-group" style="display: {% if user.role == 'student' %}block{% else %}none{% endif %};">
+        <label for="student_info_id" class="form-label">关联学生信息</label>
+        <select class="form-select" id="student_info_id" name="student_info_id">
+            <option value="">-- 请选择学生 --</option>
+            {% for student in students_for_selection %}
+            <option value="{{ student.id }}" {% if user.student_info_id == student.id %}selected{% endif %}>
+                {{ student.name }} ({{ student.student_id }})
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">保存</button>
+    <a href="{{ url_for('users') }}" class="btn btn-secondary">取消</a>
+</form>
+
+<script>
+    function toggleStudentInfo(selectElement) {
+        var studentInfoGroup = document.getElementById('student-info-group');
+        if (selectElement.value === 'student') {
+            studentInfoGroup.style.display = 'block';
+            document.getElementById('student_info_id').setAttribute('required', 'required');
+        } else {
+            studentInfoGroup.style.display = 'none';
+            document.getElementById('student_info_id').removeAttribute('required');
+            document.getElementById('student_info_id').value = ''; // 清空选择
+        }
+    }
+
+    // 页面加载时根据初始角色状态调用一次
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleStudentInfo(document.getElementById('role'));
+    });
+</script>
+{% endblock %}

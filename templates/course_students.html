@@ -1,0 +1,46 @@
+{% extends 'layout.html' %}
+
+{% block title %}课程 "{{ course.name }}" 的学生{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">课程 "{{ course.name }}" 的学生</h1>
+
+<p><strong>描述:</strong> {{ course.description or '暂无描述' }}</p>
+<p><strong>学分:</strong> {{ course.credits or 'N/A' }}</p>
+<p><strong>容量:</strong> {{ course.enrolled_count or 0 }} / {{ course.capacity or '不限' }}</p>
+
+<h4 class="mt-4">已选学生列表</h4>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>学号</th>
+                <th>姓名</th>
+                <th>性别</th>
+                <th>班级</th>
+                <th>考试成绩</th>
+                <th>表现成绩</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr>
+                <td>{{ student.student_id }}</td>
+                <td><a href="{{ url_for('enrollments', student_id=student.id) }}">{{ student.name }}</a></td>
+                <td>{{ student.gender }}</td>
+                <td>{{ student.class_name }}</td>
+                <td>{{ student.exam_score or 'N/A' }}</td>
+                <td>{{ student.performance_score or 'N/A' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center text-muted">暂无学生选修此课程。</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<a href="{{ url_for('courses') }}" class="btn btn-secondary mt-3">返回课程列表</a>
+{% endblock %}

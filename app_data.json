@@ -1,0 +1,149 @@
+{
+    "in_memory_data": {
+        "users": [
+            {
+                "id": 1,
+                "username": "admin",
+                "password": "scrypt:32768:8:1$GfKOP6ecRpxbmhM0$8bb4c5f9f1663a00b86581ae80b900753769a03675aa35f8a0200bf7662c52622a7c52371619c72789486ea9917f750b8a34e24036d2965e19dba57d496cde8c",
+                "role": "admin",
+                "student_info_id": null
+            },
+            {
+                "id": 2,
+                "username": "teacher",
+                "password": "scrypt:32768:8:1$babU1z1APVGQ2mx4$da17297049d4d03f81652a8b882377b24a3742b6eab1e1d5aeb7745ebb08d9e8db1b6c378a91304e1f22ff81f03071d32064645b4d382970bb57a445f1a9d7d4",
+                "role": "teacher",
+                "student_info_id": null
+            },
+            {
+                "id": 3,
+                "username": "111",
+                "password": "scrypt:32768:8:1$IOXWpeYfRxZGsdtt$9d0701ba5d3d3c5c0fe924e5ec65fef6542c18d4cf45c95ef240df8e968eefcd5b349176b39f90552760824f5e9b2eb1a5d380658191930ba17b0f40d63214b8",
+                "role": "student",
+                "student_info_id": 1
+            },
+            {
+                "id": 4,
+                "username": "222",
+                "password": "scrypt:32768:8:1$S701gcmktHplJFzM$284459b1caba98c57f92443e8a823d028e439942bab45f02abdfcfd7788f864c931adb1d2e7a86bff1fe48d69eaf2f00eb8b3f5369171340f783e2c36931abb9",
+                "role": "student",
+                "student_info_id": 2
+            }
+        ],
+        "students": [
+            {
+                "id": 1,
+                "name": "张三",
+                "gender": "男",
+                "age": 15,
+                "student_id": "S001",
+                "contact_phone": "13800001111",
+                "family_info": "父亲：张大山，母亲：李小花",
+                "class_name": "三年二班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 2,
+                "name": "222",
+                "gender": "男",
+                "age": 22,
+                "student_id": "22",
+                "contact_phone": "22",
+                "family_info": "",
+                "class_name": "",
+                "homeroom_teacher": ""
+            }
+        ],
+        "courses": [
+            {
+                "id": 1,
+                "name": "数学",
+                "description": "基础数学课程",
+                "credits": 3,
+                "capacity": 50
+            },
+            {
+                "id": 2,
+                "name": "英语",
+                "description": "英语听说读写",
+                "credits": 4,
+                "capacity": 40
+            },
+            {
+                "id": 3,
+                "name": "历史",
+                "description": "中国历史",
+                "credits": 2,
+                "capacity": null
+            }
+        ],
+        "enrollments": [
+            {
+                "id": 1,
+                "student_id": 1,
+                "course_id": 1,
+                "exam_score": 85,
+                "performance_score": 90
+            },
+            {
+                "id": 2,
+                "student_id": 1,
+                "course_id": 2,
+                "exam_score": null,
+                "performance_score": null
+            }
+        ],
+        "attendance": [
+            {
+                "id": 2,
+                "student_id": 1,
+                "date": "2025-11-10",
+                "status": "absent",
+                "reason": ""
+            },
+            {
+                "id": 5,
+                "student_id": 1,
+                "date": "2025-11-11",
+                "status": "present",
+                "reason": "学生自主签到"
+            }
+        ],
+        "rewards_punishments": [],
+        "parents": [],
+        "notices": [],
+        "schedules": [
+            {
+                "id": 1,
+                "course_id": 1,
+                "teacher_user_id": 2,
+                "day_of_week": "Monday",
+                "start_time": "09:00",
+                "end_time": "10:30",
+                "location": "Room 101",
+                "semester": "2023-2024 Fall"
+            },
+            {
+                "id": 2,
+                "course_id": 2,
+                "teacher_user_id": 2,
+                "day_of_week": "Tuesday",
+                "start_time": "10:00",
+                "end_time": "11:30",
+                "location": "Room 203",
+                "semester": "2023-2024 Fall"
+            }
+        ]
+    },
+    "next_id": {
+        "users": 5,
+        "students": 3,
+        "courses": 4,
+        "enrollments": 3,
+        "attendance": 6,
+        "rewards_punishments": 1,
+        "parents": 1,
+        "notices": 1,
+        "schedules": 3
+    }
+}

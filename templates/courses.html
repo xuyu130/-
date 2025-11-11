@@ -1,0 +1,86 @@
+{% extends 'layout.html' %}
+
+{% block title %}课程管理{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">课程管理</h1>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>课程列表</h4>
+    {% if session.get('role') in ['admin', 'teacher'] %}
+    <a href="{{ url_for('add_course') }}" class="btn btn-primary">添加新课程</a>
+    {% endif %}
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>课程名称</th>
+                <th>描述</th>
+                <th>学分</th> {# 新增：学分列 #}
+                <th>容量/已选</th> {# 新增：课程容量和已选人数列 #}
+                <th>操作</th> {# 操作列，内容会根据用户角色变化 #}
+            </tr>
+        </thead>
+        <tbody>
+            {% for course in courses %}
+            <tr>
+                <td>{{ course.name }}</td>
+                <td>{{ course.description or '暂无描述' }}</td>
+                <td>{{ course.credits or 'N/A' }}</td> {# 显示学分 #}
+                <td>{{ course.enrolled_count or 0 }} / {{ course.capacity or '不限' }}</td> {# 显示已选人数和容量 #}
+                <td>
+                    {# 管理员和教师的操作 #}
+                    {% if session.get('role') in ['admin', 'teacher'] %}
+                        <a href="{{ url_for('edit_course', id=course.id) }}" class="btn btn-sm btn-warning me-1">编辑</a>
+                        <a href="{{ url_for('view_course_students', id=course.id) }}" class="btn btn-sm btn-info me-1">查看学生</a> {# 新增：查看已选学生 #}
+                        <form action="{{ url_for('delete_course', id=course.id) }}" method="POST" class="d-inline delete-form">
+                            <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                        </form>
+                    {# 学生的操作 #}
+                    {% elif session.get('role') == 'student' %}
+                        {% if course.is_enrolled_by_current_user %} {# 假设后端会传递一个布尔值指示当前学生是否已选此课 #}
+                            <span class="badge bg-success me-1">已选</span>
+                            <form action="{{ url_for('unenroll_course', id=course.id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">退选</button>
+                            </form>
+                        {% elif course.capacity is not none and course.enrolled_count >= course.capacity %} {# 课程已满 #}
+                            <span class="badge bg-secondary">课程已满</span>
+                        {% else %} {# 学生可以选课 #}
+                            <form action="{{ url_for('enroll_course', id=course.id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-primary">选课</button>
+                            </form>
+                        {% endif %}
+                    {% else %} {# 其他角色或未登录用户 #}
+                        <span class="text-muted">无操作权限</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                {# colspan 需要根据列数调整：课程名称、描述、学分、容量/已选、操作 (共5列) #}
+                <td colspan="5" class="text-center text-muted">暂无课程信息。</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{# 可以添加一些JavaScript来处理删除确认 #}
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteForms = document.querySelectorAll('.delete-form');
+    deleteForms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!confirm('确定要删除此课程吗？此操作不可逆！')) {
+                event.preventDefault();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% endblock %}
