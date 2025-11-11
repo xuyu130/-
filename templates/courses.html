@@ -9,8 +9,38 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4>课程列表</h4>
     {% if session.get('role') in ['admin', 'teacher'] %}
-    <a href="{{ url_for('add_course') }}" class="btn btn-primary">添加新课程</a>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+        <i class="bi bi-plus-circle"></i> 添加新课程
+    </button>
     {% endif %}
+</div>
+
+<!-- 搜索和筛选区域 -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('courses') }}" class="row g-3">
+            <div class="col-md-6">
+                <label for="search" class="form-label">搜索课程</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       placeholder="输入课程名称或描述..." value="{{ request.args.get('search', '') }}">
+            </div>
+            <div class="col-md-3">
+                <label for="capacity_filter" class="form-label">容量筛选</label>
+                <select class="form-select" id="capacity_filter" name="capacity_filter">
+                    <option value="">所有课程</option>
+                    <option value="available" {% if request.args.get('capacity_filter') == 'available' %}selected{% endif %}>有空位</option>
+                    <option value="full" {% if request.args.get('capacity_filter') == 'full' %}selected{% endif %}>已满</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <div>
+                    <button type="submit" class="btn btn-outline-primary">搜索</button>
+                    <a href="{{ url_for('courses') }}" class="btn btn-outline-secondary">重置</a>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
 
 <div class="table-responsive">
@@ -19,48 +49,69 @@
             <tr>
                 <th>课程名称</th>
                 <th>描述</th>
-                <th>学分</th> {# 新增：学分列 #}
-                <th>容量/已选</th> {# 新增：课程容量和已选人数列 #}
-                <th>操作</th> {# 操作列，内容会根据用户角色变化 #}
+                <th>学分</th>
+                <th>容量/已选</th>
+                <th>操作</th>
             </tr>
         </thead>
         <tbody>
             {% for course in courses %}
             <tr>
-                <td>{{ course.name }}</td>
-                <td>{{ course.description or '暂无描述' }}</td>
-                <td>{{ course.credits or 'N/A' }}</td> {# 显示学分 #}
-                <td>{{ course.enrolled_count or 0 }} / {{ course.capacity or '不限' }}</td> {# 显示已选人数和容量 #}
                 <td>
-                    {# 管理员和教师的操作 #}
+                    <strong>{{ course.name }}</strong>
+                    {% if course.capacity is not none and course.enrolled_count >= course.capacity %}
+                    <span class="badge bg-danger ms-1">已满</span>
+                    {% endif %}
+                </td>
+                <td>{{ course.description or '暂无描述' }}</td>
+                <td>{{ course.credits or 'N/A' }}</td>
+                <td>
+                    {{ course.enrolled_count or 0 }} / {{ course.capacity or '不限' }}
+                    {% if course.capacity is not none %}
+                    <div class="progress mt-1" style="height: 5px;">
+                        {% set percentage = (course.enrolled_count / course.capacity * 100) if course.capacity > 0 else 0 %}
+                        <div class="progress-bar {% if percentage >= 100 %}bg-danger{% elif percentage >= 80 %}bg-warning{% else %}bg-success{% endif %}" 
+                             style="width: {{ percentage }}%"></div>
+                    </div>
+                    {% endif %}
+                </td>
+                <td>
                     {% if session.get('role') in ['admin', 'teacher'] %}
-                        <a href="{{ url_for('edit_course', id=course.id) }}" class="btn btn-sm btn-warning me-1">编辑</a>
-                        <a href="{{ url_for('view_course_students', id=course.id) }}" class="btn btn-sm btn-info me-1">查看学生</a> {# 新增：查看已选学生 #}
+                        <button type="button" class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editCourseModal{{ course.id }}">
+                            <i class="bi bi-pencil"></i> 编辑
+                        </button>
+                        <a href="{{ url_for('view_course_students', id=course.id) }}" class="btn btn-sm btn-info me-1">
+                            <i class="bi bi-people"></i> 学生
+                        </a>
                         <form action="{{ url_for('delete_course', id=course.id) }}" method="POST" class="d-inline delete-form">
-                            <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i> 删除
+                            </button>
                         </form>
-                    {# 学生的操作 #}
                     {% elif session.get('role') == 'student' %}
-                        {% if course.is_enrolled_by_current_user %} {# 假设后端会传递一个布尔值指示当前学生是否已选此课 #}
+                        {% if course.is_enrolled_by_current_user %}
                             <span class="badge bg-success me-1">已选</span>
                             <form action="{{ url_for('unenroll_course', id=course.id) }}" method="POST" class="d-inline unenroll-form">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">退选</button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-x-circle"></i> 退选
+                                </button>
                             </form>
-                        {% elif course.capacity is not none and course.enrolled_count >= course.capacity %} {# 课程已满 #}
+                        {% elif course.capacity is not none and course.enrolled_count >= course.capacity %}
                             <span class="badge bg-secondary">课程已满</span>
-                        {% else %} {# 学生可以选课 #}
+                        {% else %}
                             <form action="{{ url_for('enroll_course', id=course.id) }}" method="POST" class="d-inline enroll-form">
-                                <button type="submit" class="btn btn-sm btn-primary">选课</button>
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-plus-circle"></i> 选课
+                                </button>
                             </form>
                         {% endif %}
-                    {% else %} {# 其他角色或未登录用户 #}
+                    {% else %}
                         <span class="text-muted">无操作权限</span>
                     {% endif %}
                 </td>
             </tr>
             {% else %}
             <tr>
-                {# colspan 需要根据列数调整：课程名称、描述、学分、容量/已选、操作 (共5列) #}
                 <td colspan="5" class="text-center text-muted">暂无课程信息。</td>
             </tr>
             {% endfor %}
@@ -68,15 +119,120 @@
     </table>
 </div>
 
-{# 添加JavaScript来处理确认对话框 #}
-{% block scripts %}
+<!-- 添加课程模态框 -->
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="addCourseModal" tabindex="-1" aria-labelledby="addCourseModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCourseModalLabel">添加新课程</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_course') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">课程名称 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name" required 
+                               placeholder="请输入课程名称">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">课程描述</label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  rows="3" placeholder="请输入课程描述（可选）"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="credits" class="form-label">学分 <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="credits" name="credits" 
+                                       required min="1" max="10" placeholder="学分">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="capacity" class="form-label">课程容量</label>
+                                <input type="number" class="form-control" id="capacity" name="capacity" 
+                                       min="1" placeholder="不限容量请留空">
+                                <div class="form-text">留空表示不限制容量</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">添加课程</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- 编辑课程模态框 -->
+{% for course in courses %}
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="editCourseModal{{ course.id }}" tabindex="-1" aria-labelledby="editCourseModalLabel{{ course.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editCourseModalLabel{{ course.id }}">编辑课程</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('edit_course', id=course.id) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name{{ course.id }}" class="form-label">课程名称 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name{{ course.id }}" name="name" 
+                               value="{{ course.name }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description{{ course.id }}" class="form-label">课程描述</label>
+                        <textarea class="form-control" id="description{{ course.id }}" name="description" 
+                                  rows="3">{{ course.description or '' }}</textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="credits{{ course.id }}" class="form-label">学分 <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="credits{{ course.id }}" name="credits" 
+                                       value="{{ course.credits }}" required min="1" max="10">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="capacity{{ course.id }}" class="form-label">课程容量</label>
+                                <input type="number" class="form-control" id="capacity{{ course.id }}" name="capacity" 
+                                       value="{{ course.capacity or '' }}" min="1" placeholder="不限容量请留空">
+                                <div class="form-text">当前已选: {{ course.enrolled_count or 0 }} 人</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存修改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+{% endblock %}
+
+{% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // 处理删除课程确认
     const deleteForms = document.querySelectorAll('.delete-form');
     deleteForms.forEach(form => {
         form.addEventListener('submit', function(event) {
-            if (!confirm('确定要删除此课程吗？此操作不可逆！')) {
+            if (!confirm('确定要删除此课程吗？此操作将删除所有相关的选课记录，且不可恢复！')) {
                 event.preventDefault();
             }
         });
@@ -96,13 +252,137 @@ document.addEventListener('DOMContentLoaded', function() {
     const unenrollForms = document.querySelectorAll('.unenroll-form');
     unenrollForms.forEach(form => {
         form.addEventListener('submit', function(event) {
-            if (!confirm('确定要退选这门课程吗？')) {
+            if (!confirm('确定要退选这门课程吗？您的成绩记录也将被删除！')) {
                 event.preventDefault();
+            }
+        });
+    });
+    
+    // 添加模态框显示后重置表单
+    const addModal = document.getElementById('addCourseModal');
+    if (addModal) {
+        addModal.addEventListener('show.bs.modal', function() {
+            // 可以在这里添加初始化逻辑
+        });
+        
+        addModal.addEventListener('hidden.bs.modal', function() {
+            // 重置表单
+            const form = this.querySelector('form');
+            form.reset();
+        });
+    }
+    
+    // 表单验证
+    const forms = document.querySelectorAll('form[method="POST"]');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.classList.add('is-invalid');
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                // 滚动到第一个错误字段
+                const firstInvalid = form.querySelector('.is-invalid');
+                if (firstInvalid) {
+                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+    });
+    
+    // 实时验证
+    const requiredFields = document.querySelectorAll('[required]');
+    requiredFields.forEach(field => {
+        field.addEventListener('input', function() {
+            if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+    
+    // 容量验证
+    const capacityFields = document.querySelectorAll('input[name="capacity"]');
+    capacityFields.forEach(field => {
+        field.addEventListener('change', function() {
+            if (this.value && parseInt(this.value) < 1) {
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
             }
         });
     });
 });
 </script>
-{% endblock %}
 
+<style>
+.delete-form, .enroll-form, .unenroll-form {
+    display: inline-block;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+.progress {
+    width: 80px;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+.is-invalid {
+    border-color: #dc3545;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .d-flex h4 {
+        margin-bottom: 1rem;
+    }
+    
+    .btn-sm {
+        display: block;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .delete-form, .enroll-form, .unenroll-form {
+        display: block;
+        width: 100%;
+    }
+    
+    .progress {
+        width: 60px;
+    }
+}
+
+/* 模态框动画 */
+.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+}
+</style>
 {% endblock %}

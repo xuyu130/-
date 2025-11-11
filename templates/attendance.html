@@ -9,7 +9,9 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4>考勤记录列表</h4>
     {% if session.get('role') in ['admin', 'teacher'] %}
-    <a href="{{ url_for('add_attendance') }}" class="btn btn-primary">添加考勤记录</a>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAttendanceModal">
+        <i class="bi bi-plus-circle"></i> 添加考勤记录
+    </button>
     {% endif %}
 </div>
 
@@ -18,7 +20,7 @@
         <thead>
             <tr>
                 <th>学生姓名</th>
-                <th>学号</th> {# 修改此处 #}
+                <th>学号</th>
                 <th>日期</th>
                 <th>状态</th>
                 <th>原因</th>
@@ -31,7 +33,7 @@
             {% for record in attendance_records %}
             <tr>
                 <td>{{ record.student_name }}</td>
-                <td>{{ record.student_id_str }}</td> {# 修改此处 #}
+                <td>{{ record.student_id_str }}</td>
                 <td>{{ record.date }}</td>
                 <td>
                     {% if record.status == 'present' %}
@@ -45,9 +47,13 @@
                 <td>{{ record.reason or 'N/A' }}</td>
                 {% if session.get('role') in ['admin', 'teacher'] %}
                 <td>
-                    <a href="{{ url_for('edit_attendance', id=record.id) }}" class="btn btn-sm btn-warning">编辑</a>
+                    <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editAttendanceModal{{ record.id }}">
+                        <i class="bi bi-pencil"></i> 编辑
+                    </button>
                     <form action="{{ url_for('delete_attendance', id=record.id) }}" method="POST" class="d-inline delete-form">
-                        <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确定要删除这条考勤记录吗？')">
+                            <i class="bi bi-trash"></i> 删除
+                        </button>
                     </form>
                 </td>
                 {% endif %}
@@ -60,4 +66,268 @@
         </tbody>
     </table>
 </div>
+
+<!-- 添加考勤记录的模态框 -->
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="addAttendanceModal" tabindex="-1" aria-labelledby="addAttendanceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addAttendanceModalLabel">添加考勤记录</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_attendance') }}">
+                <div class="modal-body">
+                    <input type="hidden" name="referrer" value="{{ request.url }}">
+                    
+                    <div class="mb-3">
+                        <label for="student_id" class="form-label">选择学生 <span class="text-danger">*</span></label>
+                        <select class="form-select" id="student_id" name="student_id" required>
+                            <option value="" selected disabled>请选择学生</option>
+                            {% for student in students %}
+                            <option value="{{ student.id }}">{{ student.name }} ({{ student.student_id }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="date" class="form-label">日期 <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="date" name="date" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="status" class="form-label">考勤状态 <span class="text-danger">*</span></label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="present" selected>出勤</option>
+                            <option value="absent">缺勤</option>
+                            <option value="leave">请假</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">原因说明</label>
+                        <textarea class="form-control" id="reason" name="reason" rows="3" placeholder="请输入原因说明（可选）"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">添加</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- 为每个考勤记录创建编辑模态框 -->
+{% for record in attendance_records %}
+<div class="modal fade" id="editAttendanceModal{{ record.id }}" tabindex="-1" aria-labelledby="editAttendanceModalLabel{{ record.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editAttendanceModalLabel{{ record.id }}">编辑考勤记录</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('edit_attendance', id=record.id) }}">
+                <div class="modal-body">
+                    <input type="hidden" name="referrer" value="{{ request.url }}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">学生姓名</label>
+                        <input type="text" class="form-control" value="{{ record.student_name }}" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">学号</label>
+                        <input type="text" class="form-control" value="{{ record.student_id_str }}" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">日期</label>
+                        <input type="text" class="form-control" value="{{ record.date }}" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="status{{ record.id }}" class="form-label">考勤状态 <span class="text-danger">*</span></label>
+                        <select class="form-select" id="status{{ record.id }}" name="status" required>
+                            <option value="present" {% if record.status == 'present' %}selected{% endif %}>出勤</option>
+                            <option value="absent" {% if record.status == 'absent' %}selected{% endif %}>缺勤</option>
+                            <option value="leave" {% if record.status == 'leave' %}selected{% endif %}>请假</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="reason{{ record.id }}" class="form-label">原因说明</label>
+                        <textarea class="form-control" id="reason{{ record.id }}" name="reason" rows="3" placeholder="请输入原因说明">{{ record.reason or '' }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 页面加载完成后的处理
+document.addEventListener('DOMContentLoaded', function() {
+    // 删除确认
+    var deleteForms = document.querySelectorAll('.delete-form');
+    deleteForms.forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            if (!confirm('确定要删除这条考勤记录吗？')) {
+                e.preventDefault();
+            }
+        });
+    });
+    
+    // 添加模态框显示后重置表单
+    var addModal = document.getElementById('addAttendanceModal');
+    if (addModal) {
+        addModal.addEventListener('show.bs.modal', function() {
+            // 设置默认日期为今天
+            var today = new Date().toISOString().split('T')[0];
+            var dateField = document.getElementById('date');
+            if (dateField) {
+                dateField.value = today;
+            }
+        });
+        
+        addModal.addEventListener('hidden.bs.modal', function() {
+            // 重置表单
+            var form = this.querySelector('form');
+            form.reset();
+            
+            // 重新设置默认日期
+            var today = new Date().toISOString().split('T')[0];
+            var dateField = document.getElementById('date');
+            if (dateField) {
+                dateField.value = today;
+            }
+        });
+    }
+    
+    // 状态选择变化时，自动显示/隐藏原因字段
+    var statusSelects = document.querySelectorAll('select[name="status"]');
+    statusSelects.forEach(function(select) {
+        select.addEventListener('change', function() {
+            var formGroup = this.closest('.modal-content');
+            var reasonField = formGroup.querySelector('textarea[name="reason"]');
+            
+            if (this.value === 'present') {
+                reasonField.placeholder = '请输入原因说明（可选）';
+            } else {
+                reasonField.placeholder = '请输入原因说明';
+            }
+        });
+    });
+    
+    // 表单提交验证
+    var forms = document.querySelectorAll('form[method="POST"]');
+    forms.forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            // 检查必填字段
+            var requiredFields = form.querySelectorAll('[required]');
+            var isValid = true;
+            
+            requiredFields.forEach(function(field) {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.classList.add('is-invalid');
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('请填写所有必填字段！');
+            }
+        });
+    });
+    
+    // 实时验证必填字段
+    var requiredFields = document.querySelectorAll('[required]');
+    requiredFields.forEach(function(field) {
+        field.addEventListener('input', function() {
+            if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.delete-form {
+    display: inline-block;
+    margin-left: 5px;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.modal-body .form-control:read-only {
+    background-color: #f8f9fa;
+    opacity: 1;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+.is-invalid {
+    border-color: #dc3545;
+    padding-right: calc(1.5em + 0.75rem);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6.4.4.4-.4'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+/* 为模态框添加动画效果 */
+.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+}
+
+/* 表格行悬停效果 */
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.075);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .d-flex h4 {
+        margin-bottom: 1rem;
+    }
+    
+    .btn-sm {
+        display: block;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .delete-form {
+        display: block;
+        margin-left: 0;
+    }
+}
+</style>
 {% endblock %}

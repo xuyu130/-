@@ -8,7 +8,9 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4>奖惩记录列表</h4>
     {% if session.get('role') in ['admin', 'teacher'] %}
-    <a href="{{ url_for('add_reward_punishment') }}" class="btn btn-primary">添加奖惩记录</a>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRewardPunishmentModal">
+        <i class="bi bi-plus-circle"></i> 添加奖惩记录
+    </button>
     {% endif %}
 </div>
 
@@ -29,7 +31,7 @@
         <tbody>
             {% for record in records %}
             <tr>
-                <td>{{ record.student_name }}</td>
+                <td><strong>{{ record.student_name }}</strong></td>
                 <td>{{ record.student_id }}</td>
                 <td>
                     {% if record.type == 'reward' %}
@@ -42,9 +44,13 @@
                 <td>{{ record.date }}</td>
                 {% if session.get('role') in ['admin', 'teacher'] %}
                 <td>
-                    <a href="{{ url_for('edit_reward_punishment', id=record.id) }}" class="btn btn-sm btn-warning">编辑</a>
+                    <button type="button" class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editRewardPunishmentModal{{ record.id }}">
+                        <i class="bi bi-pencil"></i> 编辑
+                    </button>
                     <form action="{{ url_for('delete_reward_punishment', id=record.id) }}" method="POST" class="d-inline delete-form">
-                        <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <i class="bi bi-trash"></i> 删除
+                        </button>
                     </form>
                 </td>
                 {% endif %}
@@ -57,4 +63,220 @@
         </tbody>
     </table>
 </div>
+
+<!-- 添加奖惩记录模态框 -->
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="addRewardPunishmentModal" tabindex="-1" aria-labelledby="addRewardPunishmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addRewardPunishmentModalLabel">添加奖惩记录</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_reward_punishment') }}" id="addRewardPunishmentForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="student_id" class="form-label">选择学生 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="student_id" name="student_id" required>
+                                    <option value="" selected disabled>请选择学生</option>
+                                    {% for student in students %}
+                                    <option value="{{ student.id }}">{{ student.name }} ({{ student.student_id }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="type" class="form-label">类型 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="type" name="type" required>
+                                    <option value="" selected disabled>请选择类型</option>
+                                    <option value="reward">奖励</option>
+                                    <option value="punishment">处分</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">描述 <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required 
+                                  placeholder="请输入奖惩描述内容"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="date" class="form-label">日期 <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="date" name="date" required 
+                                       value="{{ today }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">添加记录</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- 编辑奖惩记录模态框 -->
+{% for record in records %}
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="editRewardPunishmentModal{{ record.id }}" tabindex="-1" aria-labelledby="editRewardPunishmentModalLabel{{ record.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editRewardPunishmentModalLabel{{ record.id }}">编辑奖惩记录</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('edit_reward_punishment', id=record.id) }}">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">学生姓名</label>
+                                <input type="text" class="form-control" value="{{ record.student_name }} ({{ record.student_id }})" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="type{{ record.id }}" class="form-label">类型 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="type{{ record.id }}" name="type" required>
+                                    <option value="reward" {% if record.type == 'reward' %}selected{% endif %}>奖励</option>
+                                    <option value="punishment" {% if record.type == 'punishment' %}selected{% endif %}>处分</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description{{ record.id }}" class="form-label">描述 <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="description{{ record.id }}" name="description" rows="3" required>{{ record.description }}</textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="date{{ record.id }}" class="form-label">日期 <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="date{{ record.id }}" name="date" 
+                                       value="{{ record.date }}" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存修改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 删除确认
+    const deleteForms = document.querySelectorAll('.delete-form');
+    deleteForms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!confirm('确定要删除此奖惩记录吗？此操作不可恢复。')) {
+                event.preventDefault();
+            }
+        });
+    });
+    
+    // 表单验证
+    const forms = document.querySelectorAll('form[method="POST"]');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            const requiredFields = form.querySelectorAll('[required]');
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.classList.add('is-invalid');
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('请检查表单中的错误信息！');
+            }
+        });
+    });
+    
+    // 实时验证
+    const inputFields = document.querySelectorAll('input, select, textarea');
+    inputFields.forEach(field => {
+        field.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+        });
+    });
+    
+    // 添加模态框重置
+    const addModal = document.getElementById('addRewardPunishmentModal');
+    if (addModal) {
+        addModal.addEventListener('hidden.bs.modal', function() {
+            const form = this.querySelector('form');
+            form.reset();
+            // 清除验证状态
+            const invalidFields = form.querySelectorAll('.is-invalid');
+            invalidFields.forEach(field => {
+                field.classList.remove('is-invalid');
+            });
+        });
+    }
+});
+</script>
+
+<style>
+.delete-form {
+    display: inline-block;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+.is-invalid {
+    border-color: #dc3545;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .modal-lg {
+        margin: 0.5rem;
+    }
+    
+    .d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .d-flex h4 {
+        margin-bottom: 1rem;
+    }
+}
+</style>
 {% endblock %}

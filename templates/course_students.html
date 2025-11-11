@@ -41,8 +41,9 @@
                     <!-- 添加编辑成绩的链接 -->
                     {% for enrollment in enrollments %}
                         {% if enrollment.student_id == student.id and enrollment.course_id == course.id %}
-                            <!-- 修改这里：添加referrer参数 -->
-                            <a href="{{ url_for('edit_enrollment', enrollment_id=enrollment.id) }}?referrer={{ request.url | urlencode }}" class="btn btn-sm btn-warning">编辑成绩</a>
+                            <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editGradeModal{{ enrollment.id }}">
+                                编辑成绩
+                            </button>
                         {% endif %}
                     {% endfor %}
                 </td>
@@ -58,4 +59,73 @@
 </div>
 
 <a href="{{ url_for('courses') }}" class="btn btn-secondary mt-3">返回课程列表</a>
+
+<!-- 为每个学生创建模态框 -->
+{% for enrollment in enrollments %}
+{% set student = students | selectattr("id", "equalto", enrollment.student_id) | first %}
+{% if student %}
+<div class="modal fade" id="editGradeModal{{ enrollment.id }}" tabindex="-1" aria-labelledby="editGradeModalLabel{{ enrollment.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editGradeModalLabel{{ enrollment.id }}">编辑 {{ student.name }} 的成绩</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('edit_enrollment', enrollment_id=enrollment.id) }}">
+                <div class="modal-body">
+                    <input type="hidden" name="referrer" value="{{ request.url }}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">学生姓名</label>
+                        <input type="text" class="form-control" value="{{ student.name }}" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">课程</label>
+                        <input type="text" class="form-control" value="{{ course.name }}" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="exam_score{{ enrollment.id }}" class="form-label">考试成绩</label>
+                        <input type="number" class="form-control" id="exam_score{{ enrollment.id }}" 
+                               name="exam_score" value="{{ enrollment.exam_score or '' }}" 
+                               min="0" max="100" step="0.1">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="performance_score{{ enrollment.id }}" class="form-label">平时表现成绩</label>
+                        <input type="number" class="form-control" id="performance_score{{ enrollment.id }}" 
+                               name="performance_score" value="{{ enrollment.performance_score or '' }}" 
+                               min="0" max="100" step="0.1">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 模态框显示时的处理
+document.addEventListener('DOMContentLoaded', function() {
+    var modals = document.querySelectorAll('.modal');
+    modals.forEach(function(modal) {
+        modal.addEventListener('show.bs.modal', function(event) {
+            console.log('模态框打开');
+        });
+        
+        modal.addEventListener('hidden.bs.modal', function(event) {
+            console.log('模态框关闭');
+        });
+    });
+});
+</script>
 {% endblock %}

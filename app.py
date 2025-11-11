@@ -384,7 +384,7 @@ def students():
     students = sorted(in_memory_data['students'], key=lambda x: x['student_id'])
     return render_template('students.html', students=students)
 
-@app.route('/students/add', methods=['GET', 'POST'])
+@app.route('/students/add', methods=['POST'])
 @teacher_or_admin_required
 def add_student():
     if request.method == 'POST':
@@ -392,12 +392,12 @@ def add_student():
         gender = request.form['gender']
         age = request.form['age']
         student_id = request.form['student_id']
-        contact_phone = request.form['contact_phone']
-        family_info = request.form['family_info']
-        class_name = request.form['class_name']
-        homeroom_teacher = request.form['homeroom_teacher']
+        contact_phone = request.form.get('contact_phone', '')
+        family_info = request.form.get('family_info', '')
+        class_name = request.form.get('class_name', '')
+        homeroom_teacher = request.form.get('homeroom_teacher', '')
 
-        if not name or not gender or not age or not student_id:
+        if not all([name, gender, age, student_id]):
             flash('姓名、性别、年龄和学号为必填项！', 'danger')
         else:
             # 检查学号唯一性
@@ -416,17 +416,16 @@ def add_student():
                     'homeroom_teacher': homeroom_teacher
                 }
                 in_memory_data['students'].append(new_student)
-                g.data_modified = True # 标记数据已修改
+                g.data_modified = True
                 flash('学生信息添加成功！', 'success')
-                return redirect(url_for('students'))
-    return render_template('add_edit_student.html', student={})
+    
+    return redirect(url_for('students'))
 
-@app.route('/students/edit/<int:id>', methods=['GET', 'POST'])
+@app.route('/students/edit/<int:id>', methods=['POST'])
 @teacher_or_admin_required
 def edit_student(id):
     student = find_item_by_id('students', id)
-
-    if student is None:
+    if not student:
         flash('学生未找到！', 'danger')
         return redirect(url_for('students'))
 
@@ -435,12 +434,12 @@ def edit_student(id):
         gender = request.form['gender']
         age = request.form['age']
         student_id = request.form['student_id']
-        contact_phone = request.form['contact_phone']
-        family_info = request.form['family_info']
-        class_name = request.form['class_name']
-        homeroom_teacher = request.form['homeroom_teacher']
+        contact_phone = request.form.get('contact_phone', '')
+        family_info = request.form.get('family_info', '')
+        class_name = request.form.get('class_name', '')
+        homeroom_teacher = request.form.get('homeroom_teacher', '')
 
-        if not name or not gender or not age or not student_id:
+        if not all([name, gender, age, student_id]):
             flash('姓名、性别、年龄和学号为必填项！', 'danger')
         else:
             # 检查学号唯一性，排除当前学生
@@ -457,12 +456,10 @@ def edit_student(id):
                     'class_name': class_name,
                     'homeroom_teacher': homeroom_teacher
                 })
-                g.data_modified = True # 标记数据已修改
+                g.data_modified = True
                 flash('学生信息更新成功！', 'success')
-                return redirect(url_for('students'))
     
-    return render_template('add_edit_student.html', student=student)
-
+    return redirect(url_for('students'))
 @app.route('/students/delete/<int:id>', methods=['POST'])
 @teacher_or_admin_required
 def delete_student(id):
@@ -490,9 +487,13 @@ def is_student_enrolled_in_course(student_info_id, course_id):
     return any(e['student_id'] == student_info_id and e['course_id'] == course_id for e in in_memory_data['enrollments'])
 
 @app.route('/courses')
-@login_required # 所有登录用户都可以查看课程列表
+@login_required
 def courses():
     all_courses = sorted(in_memory_data['courses'], key=lambda x: x['name'])
+    
+    # 获取查询参数
+    search = request.args.get('search', '')
+    capacity_filter = request.args.get('capacity_filter', '')
     
     processed_courses = []
     current_student_info_id = None
@@ -503,13 +504,26 @@ def courses():
             current_student_info_id = current_user.get('student_info_id')
 
     for course in all_courses:
-        course_data = copy.deepcopy(course) # Work on a copy to add dynamic fields
+        # 搜索筛选
+        if search and search.lower() not in course['name'].lower() and \
+           (not course.get('description') or search.lower() not in course['description'].lower()):
+            continue
+            
+        course_data = copy.deepcopy(course)
         course_data['enrolled_count'] = get_enrolled_count(course['id'])
+        
+        # 容量筛选
+        if capacity_filter == 'available' and course_data.get('capacity'):
+            if course_data['enrolled_count'] >= course_data['capacity']:
+                continue
+        elif capacity_filter == 'full' and course_data.get('capacity'):
+            if course_data['enrolled_count'] < course_data['capacity']:
+                continue
         
         if current_student_info_id:
             course_data['is_enrolled_by_current_user'] = is_student_enrolled_in_course(current_student_info_id, course['id'])
         else:
-            course_data['is_enrolled_by_current_user'] = False # Not a student or student info not linked
+            course_data['is_enrolled_by_current_user'] = False
 
         processed_courses.append(course_data)
 
@@ -735,21 +749,27 @@ def enrollments(student_id):
         flash('学生未找到！', 'danger')
         return redirect(url_for('students'))
 
-    # 关联查询：手动组合数据
+    # 获取该学生的所有选课记录
     enrollments_list = []
     for e in in_memory_data['enrollments']:
         if e['student_id'] == student_id:
             course = find_item_by_id('courses', e['course_id'])
             if course:
-                enrollment_data = copy.deepcopy(e) # 避免直接修改原始内存数据
+                enrollment_data = copy.deepcopy(e)
                 enrollment_data['course_name'] = course['name']
-                enrollment_data['credits'] = course['credits'] # 添加学分信息
                 enrollments_list.append(enrollment_data)
     
-    enrollments_list = sorted(enrollments_list, key=lambda x: x['course_name'])
-    return render_template('enrollments.html', student=student, enrollments=enrollments_list)
-
-@app.route('/students/<int:student_id>/enrollments/add', methods=['GET', 'POST'])
+    # 获取可选的课程（排除已选的课程）
+    available_courses = []
+    for course in in_memory_data['courses']:
+        if not any(e['course_id'] == course['id'] for e in enrollments_list):
+            available_courses.append(course)
+    
+    return render_template('enrollments.html', 
+                         student=student, 
+                         enrollments=enrollments_list,
+                         available_courses=available_courses)
+@app.route('/students/<int:student_id>/enrollments/add', methods=['POST'])
 @teacher_or_admin_required
 def add_enrollment(student_id):
     student = find_item_by_id('students', student_id)
@@ -757,83 +777,54 @@ def add_enrollment(student_id):
         flash('学生未找到！', 'danger')
         return redirect(url_for('students'))
     
-    courses = sorted(in_memory_data['courses'], key=lambda x: x['name'])
-
     if request.method == 'POST':
         course_id = int(request.form['course_id'])
-        exam_score = request.form['exam_score']
-        performance_score = request.form['performance_score']
+        exam_score = request.form.get('exam_score')
+        performance_score = request.form.get('performance_score')
 
         if not course_id:
             flash('请选择课程！', 'danger')
         else:
-            # 检查唯一性 (student_id, course_id)
+            # 检查是否已经选修该课程
             if any(e['student_id'] == student_id and e['course_id'] == course_id for e in in_memory_data['enrollments']):
-                flash('该学生已选修此课程！', 'danger')
+                flash('该学生已经选修此课程！', 'danger')
             else:
                 new_enrollment = {
                     'id': get_next_id('enrollments'),
                     'student_id': student_id,
                     'course_id': course_id,
-                    'exam_score': int(exam_score) if exam_score else None,
-                    'performance_score': int(performance_score) if performance_score else None
+                    'exam_score': float(exam_score) if exam_score else None,
+                    'performance_score': float(performance_score) if performance_score else None
                 }
                 in_memory_data['enrollments'].append(new_enrollment)
-                g.data_modified = True # 标记数据已修改
-                flash('选课及成绩添加成功！', 'success')
-                return redirect(url_for('enrollments', student_id=student_id))
+                g.data_modified = True
+                flash('课程/成绩添加成功！', 'success')
     
-    return render_template('add_edit_enrollment.html', student=student, courses=courses, enrollment={})
+    return redirect(url_for('enrollments', student_id=student_id))
 
-@app.route('/enrollments/edit/<int:enrollment_id>', methods=['GET', 'POST'])
+@app.route('/enrollments/edit/<int:enrollment_id>', methods=['POST'])
 @teacher_or_admin_required
 def edit_enrollment(enrollment_id):
     enrollment = find_item_by_id('enrollments', enrollment_id)
-
     if not enrollment:
         flash('选课记录未找到！', 'danger')
         return redirect(url_for('students'))
     
     student_id = enrollment['student_id']
-    course_id = enrollment['course_id']  # 获取课程ID
-    student = find_item_by_id('students', student_id)
-    courses = sorted(in_memory_data['courses'], key=lambda x: x['name'])
-
-    if request.method == 'POST':
-        new_course_id = int(request.form['course_id'])
-        exam_score = request.form['exam_score']
-        performance_score = request.form['performance_score']
-        referrer = request.form.get('referrer', '')  # 获取referrer参数
-
-        if not new_course_id:
-            flash('请选择课程！', 'danger')
-        else:
-            # 检查唯一性 (student_id, course_id)，排除当前记录
-            if any(e['student_id'] == student_id and e['course_id'] == new_course_id and e['id'] != enrollment_id for e in in_memory_data['enrollments']):
-                flash('该学生已选修此课程！', 'danger')
-            else:
-                enrollment.update({
-                    'course_id': new_course_id,
-                    'exam_score': int(exam_score) if exam_score else None,
-                    'performance_score': int(performance_score) if performance_score else None
-                })
-                g.data_modified = True # 标记数据已修改
-                flash('选课及成绩更新成功！', 'success')
-                
-                # 根据referrer决定重定向
-                if referrer:
-                    return redirect(referrer)
-                else:
-                    # 默认重定向到学生选课列表
-                    return redirect(url_for('enrollments', student_id=student_id))
     
-    # GET请求时也传递referrer到模板
-    referrer = request.args.get('referrer', '')
-    return render_template('add_edit_enrollment.html', 
-                         student=student, 
-                         courses=courses, 
-                         enrollment=enrollment,
-                         referrer=referrer)
+    if request.method == 'POST':
+        exam_score = request.form.get('exam_score')
+        performance_score = request.form.get('performance_score')
+        
+        enrollment.update({
+            'exam_score': float(exam_score) if exam_score else None,
+            'performance_score': float(performance_score) if performance_score else None
+        })
+        
+        g.data_modified = True
+        flash('成绩更新成功！', 'success')
+    
+    return redirect(url_for('enrollments', student_id=student_id))
 @app.route('/enrollments/delete/<int:enrollment_id>', methods=['POST'])
 @teacher_or_admin_required
 def delete_enrollment(enrollment_id):
@@ -860,12 +851,17 @@ def attendance():
         if student:
             record_data = copy.deepcopy(a)
             record_data['student_name'] = student['name']
-            record_data['student_id_str'] = student['student_id'] # Use 'student_id_str' to avoid confusion with the int 'student_id'
+            record_data['student_id_str'] = student['student_id']  # Use 'student_id_str' to avoid confusion with the int 'student_id'
             attendance_records.append(record_data)
     
     attendance_records = sorted(attendance_records, key=lambda x: (x['date'], x['student_name']), reverse=True)
-    return render_template('attendance.html', attendance_records=attendance_records)
-
+    
+    # 获取学生列表用于添加模态框
+    students = sorted(in_memory_data['students'], key=lambda x: x['name'])
+    
+    return render_template('attendance.html', 
+                         attendance_records=attendance_records, 
+                         students=students)
 @app.route('/attendance/add', methods=['GET', 'POST'])
 @teacher_or_admin_required
 def add_attendance():
@@ -898,41 +894,34 @@ def add_attendance():
     
     return render_template('add_edit_attendance.html', students=students, attendance_record={})
 
-@app.route('/attendance/edit/<int:id>', methods=['GET', 'POST'])
+@app.route('/attendance/edit/<int:id>', methods=['POST'])
 @teacher_or_admin_required
 def edit_attendance(id):
-    attendance_record = find_item_by_id('attendance', id)
-
-    if not attendance_record:
+    record = find_item_by_id('attendance', id)
+    if not record:
         flash('考勤记录未找到！', 'danger')
         return redirect(url_for('attendance'))
     
-    students = sorted(in_memory_data['students'], key=lambda x: x['name'])
-
-    if request.method == 'POST':
-        new_student_id = int(request.form['student_id'])
-        new_date = request.form['date']
-        status = request.form['status']
-        reason = request.form['reason']
-
-        if not new_student_id or not new_date or not status:
-            flash('学生、日期和状态为必填项！', 'danger')
-        else:
-            # 检查唯一性 (student_id, date)，排除当前记录
-            if any(a['student_id'] == new_student_id and a['date'] == new_date and a['id'] != id for a in in_memory_data['attendance']):
-                flash(f'学生 {new_student_id} 在 {new_date} 的考勤记录已存在，请检查。', 'danger')
-            else:
-                attendance_record.update({
-                    'student_id': new_student_id,
-                    'date': new_date,
-                    'status': status,
-                    'reason': reason
-                })
-                g.data_modified = True # 标记数据已修改
-                flash('考勤记录更新成功！', 'success')
-                return redirect(url_for('attendance'))
+    # 模态框只提交状态和原因，不修改学生和日期，所以不需要获取student_id和date
+    status = request.form.get('status')
+    reason = request.form.get('reason', '')
+    referrer = request.form.get('referrer', '')
     
-    return render_template('add_edit_attendance.html', students=students, attendance_record=attendance_record)
+    # 更新考勤记录（保留原来的学生ID和日期）
+    record.update({
+        'status': status,
+        'reason': reason if reason.strip() else None
+        # 不修改student_id和date，保持原值
+    })
+    
+    g.data_modified = True
+    flash('考勤记录更新成功！', 'success')
+    
+    # 根据referrer重定向
+    if referrer:
+        return redirect(referrer)
+    else:
+        return redirect(url_for('attendance'))
 
 @app.route('/attendance/delete/<int:id>', methods=['POST'])
 @teacher_or_admin_required
@@ -954,25 +943,33 @@ def rewards_punishments():
         if student:
             record_data = copy.deepcopy(rp)
             record_data['student_name'] = student['name']
-            record_data['student_id_str'] = student['student_id']
+            record_data['student_id'] = student['student_id']
             records.append(record_data)
     
     records = sorted(records, key=lambda x: (x['date'], x['student_name']), reverse=True)
-    return render_template('rewards_punishments.html', records=records)
+    
+    # 获取学生列表用于下拉选择
+    students = sorted(in_memory_data['students'], key=lambda x: x['name'])
+    
+    # 获取今天的日期用于默认值
+    today = datetime.date.today().strftime('%Y-%m-%d')
+    
+    return render_template('rewards_punishments.html', 
+                         records=records, 
+                         students=students,
+                         today=today)
 
-@app.route('/rewards_punishments/add', methods=['GET', 'POST'])
+@app.route('/rewards_punishments/add', methods=['POST'])
 @teacher_or_admin_required
 def add_reward_punishment():
-    students = sorted(in_memory_data['students'], key=lambda x: x['name'])
-
     if request.method == 'POST':
         student_id = int(request.form['student_id'])
         type = request.form['type']
         description = request.form['description']
         date = request.form['date']
 
-        if not student_id or not type or not description or not date:
-            flash('学生、类型、描述和日期为必填项！', 'danger')
+        if not all([student_id, type, description, date]):
+            flash('所有字段均为必填项！', 'danger')
         else:
             new_record = {
                 'id': get_next_id('rewards_punishments'),
@@ -982,43 +979,36 @@ def add_reward_punishment():
                 'date': date
             }
             in_memory_data['rewards_punishments'].append(new_record)
-            g.data_modified = True # 标记数据已修改
+            g.data_modified = True
             flash('奖励/处分记录添加成功！', 'success')
-            return redirect(url_for('rewards_punishments'))
     
-    return render_template('add_edit_reward_punishment.html', students=students, record={})
+    return redirect(url_for('rewards_punishments'))
 
-@app.route('/rewards_punishments/edit/<int:id>', methods=['GET', 'POST'])
+@app.route('/rewards_punishments/edit/<int:id>', methods=['POST'])
 @teacher_or_admin_required
 def edit_reward_punishment(id):
     record = find_item_by_id('rewards_punishments', id)
-
     if not record:
         flash('奖励/处分记录未找到！', 'danger')
         return redirect(url_for('rewards_punishments'))
-    
-    students = sorted(in_memory_data['students'], key=lambda x: x['name'])
 
     if request.method == 'POST':
-        student_id = int(request.form['student_id'])
         type = request.form['type']
         description = request.form['description']
         date = request.form['date']
 
-        if not student_id or not type or not description or not date:
-            flash('学生、类型、描述和日期为必填项！', 'danger')
+        if not all([type, description, date]):
+            flash('所有字段均为必填项！', 'danger')
         else:
             record.update({
-                'student_id': student_id,
                 'type': type,
                 'description': description,
                 'date': date
             })
-            g.data_modified = True # 标记数据已修改
+            g.data_modified = True
             flash('奖励/处分记录更新成功！', 'success')
-            return redirect(url_for('rewards_punishments'))
     
-    return render_template('add_edit_reward_punishment.html', students=students, record=record)
+    return redirect(url_for('rewards_punishments'))
 
 @app.route('/rewards_punishments/delete/<int:id>', methods=['POST'])
 @teacher_or_admin_required
@@ -1030,6 +1020,7 @@ def delete_reward_punishment(id):
         flash('奖励/处分记录未找到！', 'danger')
     return redirect(url_for('rewards_punishments'))
 
+# --- 学生家长信息管理 ---
 # --- 学生家长信息管理 ---
 @app.route('/parents')
 @teacher_or_admin_required
@@ -1044,77 +1035,101 @@ def parents():
             parents_list.append(parent_data)
     
     parents_list = sorted(parents_list, key=lambda x: (x['student_name'], x['relationship']))
-    return render_template('parents.html', parents=parents_list)
+    
+    # 获取学生列表用于模态框中的下拉选择
+    students = sorted(in_memory_data['students'], key=lambda x: x['name'])
+    
+    return render_template('parents.html', parents=parents_list, students=students)
 
-@app.route('/parents/add', methods=['GET', 'POST'])
+@app.route('/parents/add', methods=['POST'])
 @teacher_or_admin_required
 def add_parent():
-    students = sorted(in_memory_data['students'], key=lambda x: x['name'])
-
     if request.method == 'POST':
         student_id = int(request.form['student_id'])
-        name = request.form['name']
+        parent_name = request.form['parent_name']
         relationship = request.form['relationship']
         contact_phone = request.form['contact_phone']
-        email = request.form['email']
+        email = request.form.get('email', '')
+        address = request.form.get('address', '')
 
-        if not student_id or not name:
-            flash('学生和家长姓名为必填项！', 'danger')
+        if not all([student_id, parent_name, relationship, contact_phone]):
+            flash('请填写完整的信息！', 'danger')
         else:
-            new_parent = {
-                'id': get_next_id('parents'),
-                'student_id': student_id,
-                'name': name,
-                'relationship': relationship,
-                'contact_phone': contact_phone,
-                'email': email
-            }
-            in_memory_data['parents'].append(new_parent)
-            g.data_modified = True # 标记数据已修改
-            flash('家长信息添加成功！', 'success')
-            return redirect(url_for('parents'))
+            # 检查手机号码格式
+            if not contact_phone.isdigit() or len(contact_phone) != 11:
+                flash('请输入正确的11位手机号码！', 'danger')
+            else:
+                # 检查是否已经存在相同的家长信息（同一学生、同一关系）
+                existing_parent = next((p for p in in_memory_data['parents'] 
+                                      if p['student_id'] == student_id and 
+                                      p['relationship'] == relationship), None)
+                if existing_parent:
+                    flash(f'该学生已经存在{relationship}的联系信息！', 'danger')
+                else:
+                    new_parent = {
+                        'id': get_next_id('parents'),
+                        'student_id': student_id,
+                        'parent_name': parent_name,
+                        'relationship': relationship,
+                        'contact_phone': contact_phone,
+                        'email': email,
+                        'address': address
+                    }
+                    in_memory_data['parents'].append(new_parent)
+                    g.data_modified = True
+                    flash('家长信息添加成功！', 'success')
     
-    return render_template('add_edit_parent.html', students=students, parent={})
+    return redirect(url_for('parents'))
 
-@app.route('/parents/edit/<int:id>', methods=['GET', 'POST'])
+@app.route('/parents/edit/<int:id>', methods=['POST'])
 @teacher_or_admin_required
 def edit_parent(id):
     parent = find_item_by_id('parents', id)
-
     if not parent:
         flash('家长信息未找到！', 'danger')
         return redirect(url_for('parents'))
     
-    students = sorted(in_memory_data['students'], key=lambda x: x['name'])
-
     if request.method == 'POST':
         student_id = int(request.form['student_id'])
-        name = request.form['name']
+        parent_name = request.form['parent_name']
         relationship = request.form['relationship']
         contact_phone = request.form['contact_phone']
-        email = request.form['email']
+        email = request.form.get('email', '')
+        address = request.form.get('address', '')
 
-        if not student_id or not name:
-            flash('学生和家长姓名为必填项！', 'danger')
+        if not all([student_id, parent_name, relationship, contact_phone]):
+            flash('请填写完整的信息！', 'danger')
         else:
-            parent.update({
-                'student_id': student_id,
-                'name': name,
-                'relationship': relationship,
-                'contact_phone': contact_phone,
-                'email': email
-            })
-            g.data_modified = True # 标记数据已修改
-            flash('家长信息更新成功！', 'success')
-            return redirect(url_for('parents'))
+            # 检查手机号码格式
+            if not contact_phone.isdigit() or len(contact_phone) != 11:
+                flash('请输入正确的11位手机号码！', 'danger')
+            else:
+                # 检查是否已经存在相同的家长信息（同一学生、同一关系，排除当前记录）
+                existing_parent = next((p for p in in_memory_data['parents'] 
+                                      if p['student_id'] == student_id and 
+                                      p['relationship'] == relationship and
+                                      p['id'] != id), None)
+                if existing_parent:
+                    flash(f'该学生已经存在{relationship}的联系信息！', 'danger')
+                else:
+                    parent.update({
+                        'student_id': student_id,
+                        'parent_name': parent_name,
+                        'relationship': relationship,
+                        'contact_phone': contact_phone,
+                        'email': email,
+                        'address': address
+                    })
+                    g.data_modified = True
+                    flash('家长信息更新成功！', 'success')
     
-    return render_template('add_edit_parent.html', students=students, parent=parent)
+    return redirect(url_for('parents'))
 
 @app.route('/parents/delete/<int:id>', methods=['POST'])
 @teacher_or_admin_required
 def delete_parent(id):
     if delete_item_by_id('parents', id):
-        g.data_modified = True # 标记数据已修改
+        g.data_modified = True
         flash('家长信息删除成功！', 'success')
     else:
         flash('家长信息未找到！', 'danger')
@@ -1124,64 +1139,94 @@ def delete_parent(id):
 @app.route('/notices')
 @login_required
 def notices():
-    notices_list = sorted(in_memory_data['notices'], key=lambda x: x['date'], reverse=True)
-    return render_template('notices.html', notices=notices_list)
+    notices_list = in_memory_data['notices']
+    user_role = session.get('role')
+    
+    # 搜索和筛选功能
+    search = request.args.get('search', '')
+    target_filter = request.args.get('target', '')
+    
+    # 根据用户角色筛选通知
+    if user_role == 'student':
+        # 学生只能看到：所有用户的通知 + 针对学生的通知
+        notices_list = [n for n in notices_list if not n.get('target') or n.get('target') == 'students']
+    elif user_role == 'teacher':
+        # 教师能看到：所有用户的通知 + 针对教师的通知
+        notices_list = [n for n in notices_list if not n.get('target') or n.get('target') in ['', 'teachers', 'students']]
+    # 管理员可以看到所有通知，不需要筛选
+    
+    # 搜索功能
+    if search:
+        notices_list = [n for n in notices_list if search.lower() in n['title'].lower() or search.lower() in n['content'].lower()]
+    
+    # 目标筛选（仅对教师和管理员有效）
+    if target_filter and user_role in ['admin', 'teacher']:
+        notices_list = [n for n in notices_list if n.get('target') == target_filter]
+    
+    notices_list = sorted(notices_list, key=lambda x: x['date'], reverse=True)
+    return render_template('notices.html', notices=notices_list, user_role=user_role)
 
-@app.route('/notices/add', methods=['GET', 'POST'])
+@app.route('/notices/add', methods=['POST'])
 @teacher_or_admin_required
 def add_notice():
     if request.method == 'POST':
-        title = request.form['title']
-        content = request.form['content']
-        target = request.form['target']
-        sender = session.get('username', 'Unknown')
-
-        if not title or not content:
+        title = request.form['title'].strip()
+        content = request.form['content'].strip()
+        target = request.form.get('target', '').strip()
+        sender = request.form.get('sender', '').strip() or session.get('username', '系统')
+        
+        if not all([title, content]):
             flash('标题和内容为必填项！', 'danger')
+        elif len(title) > 100:
+            flash('标题长度不能超过100个字符！', 'danger')
+        elif len(content) > 2000:
+            flash('内容长度不能超过2000个字符！', 'danger')
         else:
             new_notice = {
                 'id': get_next_id('notices'),
                 'title': title,
                 'content': content,
-                'date': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                 'target': target,
-                'sender': sender
+                'sender': sender,
+                'date': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             }
             in_memory_data['notices'].append(new_notice)
-            g.data_modified = True # 标记数据已修改
+            g.data_modified = True
             flash('通知发布成功！', 'success')
-            return redirect(url_for('notices'))
-    return render_template('add_edit_notice.html', notice={})
+    
+    return redirect(url_for('notices'))
 
-@app.route('/notices/edit/<int:id>', methods=['GET', 'POST'])
+@app.route('/notices/edit/<int:id>', methods=['POST'])
 @teacher_or_admin_required
 def edit_notice(id):
     notice = find_item_by_id('notices', id)
-
     if not notice:
         flash('通知未找到！', 'danger')
         return redirect(url_for('notices'))
-
+    
     if request.method == 'POST':
-        title = request.form['title']
-        content = request.form['content']
-        target = request.form['target']
-
-        if not title or not content:
+        title = request.form['title'].strip()
+        content = request.form['content'].strip()
+        target = request.form.get('target', '').strip()
+        sender = request.form.get('sender', '').strip() or session.get('username', '系统')
+        
+        if not all([title, content]):
             flash('标题和内容为必填项！', 'danger')
+        elif len(title) > 100:
+            flash('标题长度不能超过100个字符！', 'danger')
+        elif len(content) > 2000:
+            flash('内容长度不能超过2000个字符！', 'danger')
         else:
             notice.update({
                 'title': title,
                 'content': content,
-                'date': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), # 更新日期
-                'target': target
+                'target': target,
+                'sender': sender
             })
-            g.data_modified = True # 标记数据已修改
+            g.data_modified = True
             flash('通知更新成功！', 'success')
-            return redirect(url_for('notices'))
     
-    return render_template('add_edit_notice.html', notice=notice)
-
+    return redirect(url_for('notices'))
 @app.route('/notices/delete/<int:id>', methods=['POST'])
 @teacher_or_admin_required
 def delete_notice(id):
@@ -1197,18 +1242,27 @@ def delete_notice(id):
 @admin_required
 def users():
     users_list = sorted(in_memory_data['users'], key=lambda x: x['username'])
-    return render_template('users.html', users=users_list)
+    
+    # 创建学生ID到学生信息的映射字典
+    students_dict = {}
+    for student in in_memory_data['students']:
+        students_dict[student['id']] = student
+    
+    # 获取学生列表用于下拉选择
+    students = sorted(in_memory_data['students'], key=lambda x: x['name'])
+    
+    return render_template('users.html', users=users_list, students=students, students_dict=students_dict)
 
-@app.route('/users/add', methods=['GET', 'POST'])
+@app.route('/users/add', methods=['POST'])
 @admin_required
 def add_user():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         role = request.form['role']
-        student_info_id = request.form.get('student_info_id') # 获取学生信息ID，如果角色是学生
+        student_info_id = request.form.get('student_info_id')
 
-        if not username or not password or not role:
+        if not all([username, password, role]):
             flash('用户名、密码和角色为必填项！', 'danger')
         elif role == 'student' and not student_info_id:
             flash('学生角色必须关联一个学生信息！', 'danger')
@@ -1226,30 +1280,26 @@ def add_user():
                     'student_info_id': int(student_info_id) if student_info_id and role == 'student' else None
                 }
                 in_memory_data['users'].append(new_user)
-                g.data_modified = True # 标记数据已修改
+                g.data_modified = True
                 flash('用户添加成功！', 'success')
-                return redirect(url_for('users'))
     
-    # 传递所有学生信息，以便管理员在添加学生用户时进行关联
-    students_for_selection = sorted(in_memory_data['students'], key=lambda x: x['name'])
-    return render_template('add_edit_user.html', user={}, students_for_selection=students_for_selection)
+    return redirect(url_for('users'))
 
-@app.route('/users/edit/<int:id>', methods=['GET', 'POST'])
+@app.route('/users/edit/<int:id>', methods=['POST'])
 @admin_required
 def edit_user(id):
     user = find_item_by_id('users', id)
-
     if not user:
         flash('用户未找到！', 'danger')
         return redirect(url_for('users'))
-
+    
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         role = request.form['role']
         student_info_id = request.form.get('student_info_id')
 
-        if not username or not role:
+        if not all([username, role]):
             flash('用户名和角色为必填项！', 'danger')
         elif role == 'student' and not student_info_id:
             flash('学生角色必须关联一个学生信息！', 'danger')
@@ -1264,12 +1314,10 @@ def edit_user(id):
                     user['password'] = generate_password_hash(password)
                 user['student_info_id'] = int(student_info_id) if student_info_id and role == 'student' else None
                 
-                g.data_modified = True # 标记数据已修改
+                g.data_modified = True
                 flash('用户信息更新成功！', 'success')
-                return redirect(url_for('users'))
     
-    students_for_selection = sorted(in_memory_data['students'], key=lambda x: x['name'])
-    return render_template('add_edit_user.html', user=user, students_for_selection=students_for_selection)
+    return redirect(url_for('users'))
 
 @app.route('/users/delete/<int:id>', methods=['POST'])
 @admin_required
@@ -1367,16 +1415,18 @@ def schedules():
     day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     schedules_list.sort(key=lambda x: (day_order.index(x['day_of_week']), x['start_time']))
 
-    return render_template('schedules.html', schedules=schedules_list)
+    # 获取课程和教师列表用于模态框
+    courses = sorted(in_memory_data['courses'], key=lambda x: x['name'])
+    teachers = sorted([u for u in in_memory_data['users'] if u['role'] == 'teacher'], key=lambda x: x['username'])
+
+    return render_template('schedules.html', 
+                         schedules=schedules_list,
+                         courses=courses,
+                         teachers=teachers)
 
 @app.route('/schedules/add', methods=['GET', 'POST'])
 @teacher_or_admin_required
 def add_schedule():
-    courses = sorted(in_memory_data['courses'], key=lambda x: x['name'])
-    teachers = sorted([u for u in in_memory_data['users'] if u['role'] == 'teacher'], key=lambda x: x['username'])
-    
-    days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-
     if request.method == 'POST':
         course_id = int(request.form['course_id'])
         teacher_user_id = int(request.form['teacher_user_id'])
@@ -1406,15 +1456,13 @@ def add_schedule():
             else:
                 new_schedule_data['id'] = get_next_id('schedules')
                 in_memory_data['schedules'].append(new_schedule_data)
-                g.data_modified = True # 标记数据已修改
+                g.data_modified = True
                 flash('排课添加成功！', 'success')
-                return redirect(url_for('schedules'))
+        
+        return redirect(url_for('schedules'))
     
-    return render_template('add_edit_schedule.html', 
-                           schedule={}, 
-                           courses=courses, 
-                           teachers=teachers, 
-                           days_of_week=days_of_week)
+    # GET 请求直接重定向到排课列表页面
+    return redirect(url_for('schedules'))
 
 @app.route('/schedules/edit/<int:id>', methods=['GET', 'POST'])
 @teacher_or_admin_required
@@ -1423,10 +1471,6 @@ def edit_schedule(id):
     if not schedule:
         flash('排课记录未找到！', 'danger')
         return redirect(url_for('schedules'))
-
-    courses = sorted(in_memory_data['courses'], key=lambda x: x['name'])
-    teachers = sorted([u for u in in_memory_data['users'] if u['role'] == 'teacher'], key=lambda x: x['username'])
-    days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
     if request.method == 'POST':
         course_id = int(request.form['course_id'])
@@ -1456,15 +1500,13 @@ def edit_schedule(id):
                 flash(conflict_message, 'danger')
             else:
                 schedule.update(updated_schedule_data)
-                g.data_modified = True # 标记数据已修改
+                g.data_modified = True
                 flash('排课更新成功！', 'success')
-                return redirect(url_for('schedules'))
+        
+        return redirect(url_for('schedules'))
     
-    return render_template('add_edit_schedule.html', 
-                           schedule=schedule, 
-                           courses=courses, 
-                           teachers=teachers, 
-                           days_of_week=days_of_week)
+    # GET 请求直接重定向到排课列表页面
+    return redirect(url_for('schedules'))
 
 @app.route('/schedules/delete/<int:id>', methods=['POST'])
 @teacher_or_admin_required

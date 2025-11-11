@@ -1,4 +1,4 @@
-<!-- 课程管理-排课管理 -->
+<!-- schedules.html -->
 {% extends 'layout.html' %}
 
 {% block title %}排课管理{% endblock %}
@@ -9,8 +9,60 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4>排课列表</h4>
     {% if session.get('role') in ['admin', 'teacher'] %}
-    <a href="{{ url_for('add_schedule') }}" class="btn btn-primary">添加新排课</a>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addScheduleModal">
+        <i class="bi bi-plus-circle"></i> 添加新排课
+    </button>
     {% endif %}
+</div>
+
+<!-- 搜索和筛选区域 -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('schedules') }}" class="row g-3">
+            <div class="col-md-3">
+                <label for="course_filter" class="form-label">课程筛选</label>
+                <select class="form-select" id="course_filter" name="course_id">
+                    <option value="">所有课程</option>
+                    {% for course in courses %}
+                    <option value="{{ course.id }}" {% if request.args.get('course_id')|int == course.id %}selected{% endif %}>
+                        {{ course.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="teacher_filter" class="form-label">教师筛选</label>
+                <select class="form-select" id="teacher_filter" name="teacher_user_id">
+                    <option value="">所有教师</option>
+                    {% for teacher in teachers %}
+                    <option value="{{ teacher.id }}" {% if request.args.get('teacher_user_id')|int == teacher.id %}selected{% endif %}>
+                        {{ teacher.username }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="day_filter" class="form-label">星期筛选</label>
+                <select class="form-select" id="day_filter" name="day_of_week">
+                    <option value="">所有日期</option>
+                    <option value="Monday" {% if request.args.get('day_of_week') == 'Monday' %}selected{% endif %}>星期一</option>
+                    <option value="Tuesday" {% if request.args.get('day_of_week') == 'Tuesday' %}selected{% endif %}>星期二</option>
+                    <option value="Wednesday" {% if request.args.get('day_of_week') == 'Wednesday' %}selected{% endif %}>星期三</option>
+                    <option value="Thursday" {% if request.args.get('day_of_week') == 'Thursday' %}selected{% endif %}>星期四</option>
+                    <option value="Friday" {% if request.args.get('day_of_week') == 'Friday' %}selected{% endif %}>星期五</option>
+                    <option value="Saturday" {% if request.args.get('day_of_week') == 'Saturday' %}selected{% endif %}>星期六</option>
+                    <option value="Sunday" {% if request.args.get('day_of_week') == 'Sunday' %}selected{% endif %}>星期日</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <div>
+                    <button type="submit" class="btn btn-outline-primary">筛选</button>
+                    <a href="{{ url_for('schedules') }}" class="btn btn-outline-secondary">重置</a>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
 
 <div class="table-responsive">
@@ -31,33 +83,251 @@
         <tbody>
             {% for schedule in schedules %}
             <tr>
-                <td>{{ schedule.course_name }}</td>
+                <td>
+                    <strong>{{ schedule.course_name }}</strong>
+                </td>
                 <td>{{ schedule.teacher_name }}</td>
-                <td>{{ schedule.day_of_week }}</td>
-                <td>{{ schedule.start_time }} - {{ schedule.end_time }}</td>
+                <td>
+                    <span class="badge bg-primary">
+                        {% if schedule.day_of_week == 'Monday' %}星期一
+                        {% elif schedule.day_of_week == 'Tuesday' %}星期二
+                        {% elif schedule.day_of_week == 'Wednesday' %}星期三
+                        {% elif schedule.day_of_week == 'Thursday' %}星期四
+                        {% elif schedule.day_of_week == 'Friday' %}星期五
+                        {% elif schedule.day_of_week == 'Saturday' %}星期六
+                        {% elif schedule.day_of_week == 'Sunday' %}星期日
+                        {% else %}{{ schedule.day_of_week }}
+                        {% endif %}
+                    </span>
+                </td>
+                <td>
+                    <span class="text-success">{{ schedule.start_time }}</span> - 
+                    <span class="text-danger">{{ schedule.end_time }}</span>
+                </td>
                 <td>{{ schedule.location }}</td>
-                <td>{{ schedule.semester or 'N/A' }}</td>
+                <td>
+                    <span class="badge bg-info text-dark">{{ schedule.semester or '未知学期' }}</span>
+                </td>
                 {% if session.get('role') in ['admin', 'teacher'] %}
                 <td>
-                    <a href="{{ url_for('edit_schedule', id=schedule.id) }}" class="btn btn-sm btn-warning me-1">编辑</a>
+                    <button type="button" class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editScheduleModal{{ schedule.id }}">
+                        <i class="bi bi-pencil"></i> 编辑
+                    </button>
                     <form action="{{ url_for('delete_schedule', id=schedule.id) }}" method="POST" class="d-inline delete-form">
-                        <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <i class="bi bi-trash"></i> 删除
+                        </button>
                     </form>
                 </td>
                 {% endif %}
             </tr>
             {% else %}
             <tr>
-                <td colspan="7" class="text-center text-muted">暂无排课信息。</td>
+                <td colspan="{% if session.get('role') in ['admin', 'teacher'] %}7{% else %}6{% endif %}" class="text-center text-muted">暂无排课信息。</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 
-{% block scripts %}
+<!-- 添加排课模态框 -->
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="addScheduleModal" tabindex="-1" aria-labelledby="addScheduleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addScheduleModalLabel">添加新排课</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_schedule') }}" id="addScheduleForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="course_id" class="form-label">选择课程 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="course_id" name="course_id" required>
+                                    <option value="" selected disabled>请选择课程</option>
+                                    {% for course in courses %}
+                                    <option value="{{ course.id }}">{{ course.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="teacher_user_id" class="form-label">选择教师 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="teacher_user_id" name="teacher_user_id" required>
+                                    <option value="" selected disabled>请选择教师</option>
+                                    {% for teacher in teachers %}
+                                    <option value="{{ teacher.id }}">{{ teacher.username }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="day_of_week" class="form-label">星期 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="day_of_week" name="day_of_week" required>
+                                    <option value="" selected disabled>选择星期</option>
+                                    <option value="Monday">星期一</option>
+                                    <option value="Tuesday">星期二</option>
+                                    <option value="Wednesday">星期三</option>
+                                    <option value="Thursday">星期四</option>
+                                    <option value="Friday">星期五</option>
+                                    <option value="Saturday">星期六</option>
+                                    <option value="Sunday">星期日</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="start_time" class="form-label">开始时间 <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="start_time" name="start_time" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="end_time" class="form-label">结束时间 <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="end_time" name="end_time" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="location" class="form-label">教室/地点 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="location" name="location" required 
+                                       placeholder="例如：教学楼A101">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="semester" class="form-label">学期</label>
+                                <input type="text" class="form-control" id="semester" name="semester" 
+                                       placeholder="例如：2024春季学期" value="未知学期">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">添加排课</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- 编辑排课模态框 -->
+{% for schedule in schedules %}
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="editScheduleModal{{ schedule.id }}" tabindex="-1" aria-labelledby="editScheduleModalLabel{{ schedule.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editScheduleModalLabel{{ schedule.id }}">编辑排课</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('edit_schedule', id=schedule.id) }}">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="course_id{{ schedule.id }}" class="form-label">选择课程 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="course_id{{ schedule.id }}" name="course_id" required>
+                                    {% for course in courses %}
+                                    <option value="{{ course.id }}" {% if schedule.course_id == course.id %}selected{% endif %}>
+                                        {{ course.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="teacher_user_id{{ schedule.id }}" class="form-label">选择教师 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="teacher_user_id{{ schedule.id }}" name="teacher_user_id" required>
+                                    {% for teacher in teachers %}
+                                    <option value="{{ teacher.id }}" {% if schedule.teacher_user_id == teacher.id %}selected{% endif %}>
+                                        {{ teacher.username }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="day_of_week{{ schedule.id }}" class="form-label">星期 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="day_of_week{{ schedule.id }}" name="day_of_week" required>
+                                    <option value="Monday" {% if schedule.day_of_week == 'Monday' %}selected{% endif %}>星期一</option>
+                                    <option value="Tuesday" {% if schedule.day_of_week == 'Tuesday' %}selected{% endif %}>星期二</option>
+                                    <option value="Wednesday" {% if schedule.day_of_week == 'Wednesday' %}selected{% endif %}>星期三</option>
+                                    <option value="Thursday" {% if schedule.day_of_week == 'Thursday' %}selected{% endif %}>星期四</option>
+                                    <option value="Friday" {% if schedule.day_of_week == 'Friday' %}selected{% endif %}>星期五</option>
+                                    <option value="Saturday" {% if schedule.day_of_week == 'Saturday' %}selected{% endif %}>星期六</option>
+                                    <option value="Sunday" {% if schedule.day_of_week == 'Sunday' %}selected{% endif %}>星期日</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="start_time{{ schedule.id }}" class="form-label">开始时间 <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="start_time{{ schedule.id }}" 
+                                       name="start_time" value="{{ schedule.start_time }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="end_time{{ schedule.id }}" class="form-label">结束时间 <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="end_time{{ schedule.id }}" 
+                                       name="end_time" value="{{ schedule.end_time }}" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="location{{ schedule.id }}" class="form-label">教室/地点 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="location{{ schedule.id }}" 
+                                       name="location" value="{{ schedule.location }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="semester{{ schedule.id }}" class="form-label">学期</label>
+                                <input type="text" class="form-control" id="semester{{ schedule.id }}" 
+                                       name="semester" value="{{ schedule.semester or '未知学期' }}" 
+                                       placeholder="例如：2024春季学期">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存修改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+{% endblock %}
+
+{% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // 删除确认
     const deleteForms = document.querySelectorAll('.delete-form');
     deleteForms.forEach(form => {
         form.addEventListener('submit', function(event) {
@@ -66,8 +336,130 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // 时间验证
+    const timeInputs = document.querySelectorAll('input[type="time"]');
+    timeInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const form = this.closest('form');
+            const startTime = form.querySelector('input[name="start_time"]');
+            const endTime = form.querySelector('input[name="end_time"]');
+            
+            if (startTime && endTime && startTime.value && endTime.value) {
+                if (startTime.value >= endTime.value) {
+                    startTime.classList.add('is-invalid');
+                    endTime.classList.add('is-invalid');
+                } else {
+                    startTime.classList.remove('is-invalid');
+                    endTime.classList.remove('is-invalid');
+                }
+            }
+        });
+    });
+    
+    // 表单提交验证
+    const forms = document.querySelectorAll('form[method="POST"]');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            const startTime = form.querySelector('input[name="start_time"]');
+            const endTime = form.querySelector('input[name="end_time"]');
+            
+            if (startTime && endTime && startTime.value && endTime.value) {
+                if (startTime.value >= endTime.value) {
+                    isValid = false;
+                    startTime.classList.add('is-invalid');
+                    endTime.classList.add('is-invalid');
+                }
+            }
+            
+            const requiredFields = form.querySelectorAll('[required]');
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.classList.add('is-invalid');
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('请检查表单中的错误信息！');
+            }
+        });
+    });
+    
+    // 实时验证
+    const requiredFields = document.querySelectorAll('[required]');
+    requiredFields.forEach(field => {
+        field.addEventListener('input', function() {
+            if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+    
+    // 添加模态框重置
+    const addModal = document.getElementById('addScheduleModal');
+    if (addModal) {
+        addModal.addEventListener('hidden.bs.modal', function() {
+            const form = this.querySelector('form');
+            form.reset();
+            // 清除验证状态
+            const invalidFields = form.querySelectorAll('.is-invalid');
+            invalidFields.forEach(field => {
+                field.classList.remove('is-invalid');
+            });
+        });
+    }
 });
 </script>
-{% endblock %}
 
+<style>
+.delete-form {
+    display: inline-block;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+.is-invalid {
+    border-color: #dc3545;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .modal-lg {
+        margin: 0.5rem;
+    }
+    
+    .d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .d-flex h4 {
+        margin-bottom: 1rem;
+    }
+}
+
+/* 模态框动画 */
+.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+}
+</style>
 {% endblock %}

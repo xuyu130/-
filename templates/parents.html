@@ -8,7 +8,9 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4>家长列表</h4>
     {% if session.get('role') in ['admin', 'teacher'] %}
-    <a href="{{ url_for('add_parent') }}" class="btn btn-primary">添加家长信息</a>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addParentModal">
+        <i class="bi bi-plus-circle"></i> 添加家长信息
+    </button>
     {% endif %}
 </div>
 
@@ -30,17 +32,23 @@
         <tbody>
             {% for parent in parents %}
             <tr>
-                <td>{{ parent.student_name }}</td>
+                <td><strong>{{ parent.student_name }}</strong></td>
                 <td>{{ parent.student_id }}</td>
                 <td>{{ parent.parent_name }}</td>
-                <td>{{ parent.relationship or 'N/A' }}</td>
-                <td>{{ parent.contact_phone or 'N/A' }}</td>
-                <td>{{ parent.email or 'N/A' }}</td>
+                <td>
+                    <span class="badge bg-primary">{{ parent.relationship or '未设置' }}</span>
+                </td>
+                <td>{{ parent.contact_phone or '未设置' }}</td>
+                <td>{{ parent.email or '未设置' }}</td>
                 {% if session.get('role') in ['admin', 'teacher'] %}
                 <td>
-                    <a href="{{ url_for('edit_parent', id=parent.id) }}" class="btn btn-sm btn-warning">编辑</a>
+                    <button type="button" class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editParentModal{{ parent.id }}">
+                        <i class="bi bi-pencil"></i> 编辑
+                    </button>
                     <form action="{{ url_for('delete_parent', id=parent.id) }}" method="POST" class="d-inline delete-form">
-                        <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <i class="bi bi-trash"></i> 删除
+                        </button>
                     </form>
                 </td>
                 {% endif %}
@@ -53,4 +61,300 @@
         </tbody>
     </table>
 </div>
+
+<!-- 添加家长信息模态框 -->
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="addParentModal" tabindex="-1" aria-labelledby="addParentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addParentModalLabel">添加家长信息</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_parent') }}" id="addParentForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="student_id" class="form-label">选择学生 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="student_id" name="student_id" required>
+                                    <option value="" selected disabled>请选择学生</option>
+                                    {% for student in students %}
+                                    <option value="{{ student.id }}">{{ student.username }} ({{ student.student_id or '无学号' }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="parent_name" class="form-label">家长姓名 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="parent_name" name="parent_name" required 
+                                       placeholder="请输入家长姓名">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="relationship" class="form-label">关系 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="relationship" name="relationship" required>
+                                    <option value="" selected disabled>请选择关系</option>
+                                    <option value="父亲">父亲</option>
+                                    <option value="母亲">母亲</option>
+                                    <option value="祖父">祖父</option>
+                                    <option value="祖母">祖母</option>
+                                    <option value="外祖父">外祖父</option>
+                                    <option value="外祖母">外祖母</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="contact_phone" class="form-label">联系电话 <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control" id="contact_phone" name="contact_phone" required 
+                                       placeholder="请输入联系电话" pattern="[0-9]{11}" maxlength="11">
+                                <div class="form-text">请输入11位手机号码</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">邮箱地址</label>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               placeholder="请输入邮箱地址">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="address" class="form-label">家庭住址</label>
+                        <textarea class="form-control" id="address" name="address" rows="2" 
+                                  placeholder="请输入家庭住址"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">添加家长信息</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- 编辑家长信息模态框 -->
+{% for parent in parents %}
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="editParentModal{{ parent.id }}" tabindex="-1" aria-labelledby="editParentModalLabel{{ parent.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editParentModalLabel{{ parent.id }}">编辑家长信息</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('edit_parent', id=parent.id) }}">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="student_id{{ parent.id }}" class="form-label">选择学生 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="student_id{{ parent.id }}" name="student_id" required>
+                                    {% for student in students %}
+                                    <option value="{{ student.id }}" {% if parent.student_id == student.id %}selected{% endif %}>
+                                        {{ student.username }} ({{ student.student_id or '无学号' }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="parent_name{{ parent.id }}" class="form-label">家长姓名 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="parent_name{{ parent.id }}" name="parent_name" 
+                                       value="{{ parent.parent_name }}" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="relationship{{ parent.id }}" class="form-label">关系 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="relationship{{ parent.id }}" name="relationship" required>
+                                    <option value="父亲" {% if parent.relationship == '父亲' %}selected{% endif %}>父亲</option>
+                                    <option value="母亲" {% if parent.relationship == '母亲' %}selected{% endif %}>母亲</option>
+                                    <option value="祖父" {% if parent.relationship == '祖父' %}selected{% endif %}>祖父</option>
+                                    <option value="祖母" {% if parent.relationship == '祖母' %}selected{% endif %}>祖母</option>
+                                    <option value="外祖父" {% if parent.relationship == '外祖父' %}selected{% endif %}>外祖父</option>
+                                    <option value="外祖母" {% if parent.relationship == '外祖母' %}selected{% endif %}>外祖母</option>
+                                    <option value="其他" {% if parent.relationship == '其他' %}selected{% endif %}>其他</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="contact_phone{{ parent.id }}" class="form-label">联系电话 <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control" id="contact_phone{{ parent.id }}" name="contact_phone" 
+                                       value="{{ parent.contact_phone }}" required pattern="[0-9]{11}" maxlength="11">
+                                <div class="form-text">请输入11位手机号码</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email{{ parent.id }}" class="form-label">邮箱地址</label>
+                        <input type="email" class="form-control" id="email{{ parent.id }}" name="email" 
+                               value="{{ parent.email or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="address{{ parent.id }}" class="form-label">家庭住址</label>
+                        <textarea class="form-control" id="address{{ parent.id }}" name="address" rows="2">{{ parent.address or '' }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存修改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 删除确认
+    const deleteForms = document.querySelectorAll('.delete-form');
+    deleteForms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!confirm('确定要删除此家长信息吗？')) {
+                event.preventDefault();
+            }
+        });
+    });
+    
+    // 表单验证
+    const forms = document.querySelectorAll('form[method="POST"]');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            const requiredFields = form.querySelectorAll('[required]');
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.classList.add('is-invalid');
+                }
+            });
+            
+            // 验证手机号码格式
+            const phoneField = form.querySelector('input[type="tel"]');
+            if (phoneField && phoneField.value) {
+                const phonePattern = /^[0-9]{11}$/;
+                if (!phonePattern.test(phoneField.value)) {
+                    isValid = false;
+                    phoneField.classList.add('is-invalid');
+                }
+            }
+            
+            // 验证邮箱格式（如果填写了邮箱）
+            const emailField = form.querySelector('input[type="email"]');
+            if (emailField && emailField.value) {
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(emailField.value)) {
+                    isValid = false;
+                    emailField.classList.add('is-invalid');
+                }
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('请检查表单中的错误信息！');
+            }
+        });
+    });
+    
+    // 实时验证
+    const inputFields = document.querySelectorAll('input, select, textarea');
+    inputFields.forEach(field => {
+        field.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+            
+            // 实时验证手机号码
+            if (this.type === 'tel' && this.value) {
+                const phonePattern = /^[0-9]{11}$/;
+                if (!phonePattern.test(this.value)) {
+                    this.classList.add('is-invalid');
+                }
+            }
+            
+            // 实时验证邮箱
+            if (this.type === 'email' && this.value) {
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(this.value)) {
+                    this.classList.add('is-invalid');
+                }
+            }
+        });
+    });
+    
+    // 添加模态框重置
+    const addModal = document.getElementById('addParentModal');
+    if (addModal) {
+        addModal.addEventListener('hidden.bs.modal', function() {
+            const form = this.querySelector('form');
+            form.reset();
+            // 清除验证状态
+            const invalidFields = form.querySelectorAll('.is-invalid');
+            invalidFields.forEach(field => {
+                field.classList.remove('is-invalid');
+            });
+        });
+    }
+});
+</script>
+
+<style>
+.delete-form {
+    display: inline-block;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+.is-invalid {
+    border-color: #dc3545;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .modal-lg {
+        margin: 0.5rem;
+    }
+    
+    .d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .d-flex h4 {
+        margin-bottom: 1rem;
+    }
+}
+</style>
 {% endblock %}

@@ -7,7 +7,9 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4>系统用户列表</h4>
-    <a href="{{ url_for('add_user') }}" class="btn btn-primary">添加新用户</a>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+        <i class="bi bi-plus-circle"></i> 添加新用户
+    </button>
 </div>
 
 <div class="table-responsive">
@@ -16,13 +18,14 @@
             <tr>
                 <th>用户名</th>
                 <th>角色</th>
+                <th>关联学生</th>
                 <th>操作</th>
             </tr>
         </thead>
         <tbody>
             {% for user in users %}
             <tr>
-                <td>{{ user.username }}</td>
+                <td><strong>{{ user.username }}</strong></td>
                 <td>
                     {% if user.role == 'admin' %}
                         <span class="badge bg-danger">管理员</span>
@@ -33,22 +36,320 @@
                     {% endif %}
                 </td>
                 <td>
-                    <a href="{{ url_for('edit_user', id=user.id) }}" class="btn btn-sm btn-warning">编辑</a>
-                    {% if user.id != session.get('user_id') %} {# 不能删除当前登录的用户 #}
+                    {% if user.role == 'student' and user.student_info_id %}
+                        {% set student = students_dict.get(user.student_info_id) %}
+                        {% if student %}
+                            {{ student.name }} ({{ student.student_id }})
+                        {% else %}
+                            <span class="text-muted">未关联</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editUserModal{{ user.id }}">
+                        <i class="bi bi-pencil"></i> 编辑
+                    </button>
+                    {% if user.id != session.get('user_id') %}
                     <form action="{{ url_for('delete_user', id=user.id) }}" method="POST" class="d-inline delete-form">
-                        <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <i class="bi bi-trash"></i> 删除
+                        </button>
                     </form>
                     {% else %}
-                    <button type="button" class="btn btn-sm btn-secondary" disabled>删除自己</button>
+                    <button type="button" class="btn btn-sm btn-secondary" disabled>
+                        <i class="bi bi-person-lock"></i> 当前用户
+                    </button>
                     {% endif %}
                 </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="3" class="text-center text-muted">暂无系统用户。</td>
+                <td colspan="4" class="text-center text-muted">暂无系统用户。</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
+<!-- 添加用户模态框 -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addUserModalLabel">添加新用户</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_user') }}" id="addUserForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">用户名 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="username" name="username" required 
+                                       placeholder="请输入用户名">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="password" class="form-label">密码 <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="password" name="password" required 
+                                       placeholder="请输入密码">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="role" class="form-label">角色 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="role" name="role" required onchange="toggleStudentSelection(this)">
+                                    <option value="" selected disabled>请选择角色</option>
+                                    <option value="admin">管理员</option>
+                                    <option value="teacher">教师</option>
+                                    <option value="student">学生</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3" id="studentSelection" style="display: none;">
+                                <label for="student_info_id" class="form-label">关联学生信息 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="student_info_id" name="student_info_id">
+                                    <option value="" selected disabled>请选择学生</option>
+                                    {% for student in students %}
+                                    <option value="{{ student.id }}">{{ student.name }} ({{ student.student_id }})</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">学生用户必须关联一个学生信息</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">添加用户</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑用户模态框 -->
+{% for user in users %}
+<div class="modal fade" id="editUserModal{{ user.id }}" tabindex="-1" aria-labelledby="editUserModalLabel{{ user.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editUserModalLabel{{ user.id }}">编辑用户信息</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('edit_user', id=user.id) }}">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="username{{ user.id }}" class="form-label">用户名 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="username{{ user.id }}" name="username" 
+                                       value="{{ user.username }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="password{{ user.id }}" class="form-label">密码</label>
+                                <input type="password" class="form-control" id="password{{ user.id }}" name="password" 
+                                       placeholder="留空则不修改密码">
+                                <div class="form-text">如果不修改密码，请留空</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="role{{ user.id }}" class="form-label">角色 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="role{{ user.id }}" name="role" required onchange="toggleStudentSelectionEdit('{{ user.id }}')">
+                                    <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>管理员</option>
+                                    <option value="teacher" {% if user.role == 'teacher' %}selected{% endif %}>教师</option>
+                                    <option value="student" {% if user.role == 'student' %}selected{% endif %}>学生</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3" id="studentSelection{{ user.id }}" style="display: {% if user.role == 'student' %}block{% else %}none{% endif %};">
+                                <label for="student_info_id{{ user.id }}" class="form-label">关联学生信息 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="student_info_id{{ user.id }}" name="student_info_id">
+                                    <option value="">请选择学生</option>
+                                    {% for student in students %}
+                                    <option value="{{ student.id }}" {% if user.student_info_id == student.id %}selected{% endif %}>
+                                        {{ student.name }} ({{ student.student_id }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">学生用户必须关联一个学生信息</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存修改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 删除确认
+    const deleteForms = document.querySelectorAll('.delete-form');
+    deleteForms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!confirm('确定要删除此用户吗？此操作不可恢复。')) {
+                event.preventDefault();
+            }
+        });
+    });
+    
+    // 表单验证
+    const forms = document.querySelectorAll('form[method="POST"]');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            const username = form.querySelector('input[name="username"]');
+            const role = form.querySelector('select[name="role"]');
+            const studentSelection = form.querySelector('select[name="student_info_id"]');
+            
+            if (!username.value.trim()) {
+                isValid = false;
+                username.classList.add('is-invalid');
+            }
+            
+            if (!role.value) {
+                isValid = false;
+                role.classList.add('is-invalid');
+            }
+            
+            // 如果是学生角色，必须选择学生信息
+            if (role.value === 'student') {
+                if (!studentSelection || !studentSelection.value) {
+                    isValid = false;
+                    studentSelection.classList.add('is-invalid');
+                }
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('请检查表单中的错误信息！');
+            }
+        });
+    });
+    
+    // 实时验证
+    const inputFields = document.querySelectorAll('input, select');
+    inputFields.forEach(field => {
+        field.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+        });
+        field.addEventListener('change', function() {
+            this.classList.remove('is-invalid');
+        });
+    });
+    
+    // 添加模态框重置
+    const addModal = document.getElementById('addUserModal');
+    if (addModal) {
+        addModal.addEventListener('hidden.bs.modal', function() {
+            const form = this.querySelector('form');
+            form.reset();
+            // 隐藏学生选择框
+            const studentSelection = document.getElementById('studentSelection');
+            if (studentSelection) {
+                studentSelection.style.display = 'none';
+            }
+            // 清除验证状态
+            const invalidFields = form.querySelectorAll('.is-invalid');
+            invalidFields.forEach(field => {
+                field.classList.remove('is-invalid');
+            });
+        });
+    }
+});
+
+// 显示/隐藏学生选择框
+function toggleStudentSelection(selectElement) {
+    const studentSelection = document.getElementById('studentSelection');
+    const studentSelect = document.getElementById('student_info_id');
+    
+    if (selectElement.value === 'student') {
+        studentSelection.style.display = 'block';
+        studentSelect.required = true;
+    } else {
+        studentSelection.style.display = 'none';
+        studentSelect.required = false;
+        studentSelect.value = '';
+    }
+}
+
+// 编辑模态框的显示/隐藏学生选择框
+function toggleStudentSelectionEdit(userId) {
+    const studentSelection = document.getElementById('studentSelection' + userId);
+    const studentSelect = document.getElementById('student_info_id' + userId);
+    const roleSelect = document.getElementById('role' + userId);
+    
+    if (roleSelect.value === 'student') {
+        studentSelection.style.display = 'block';
+        studentSelect.required = true;
+    } else {
+        studentSelection.style.display = 'none';
+        studentSelect.required = false;
+        studentSelect.value = '';
+    }
+}
+</script>
+
+<style>
+.delete-form {
+    display: inline-block;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+.is-invalid {
+    border-color: #dc3545;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .modal-lg {
+        margin: 0.5rem;
+    }
+    
+    .d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .d-flex h4 {
+        margin-bottom: 1rem;
+    }
+}
+</style>
 {% endblock %}

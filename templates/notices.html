@@ -6,11 +6,58 @@
 <h1 class="mb-4">通知公告管理</h1>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4>通知列表</h4>
+    <h4>
+        {% if session.get('role') == 'student' %}
+        我的通知
+        {% else %}
+        通知列表
+        {% endif %}
+    </h4>
     {% if session.get('role') in ['admin', 'teacher'] %}
-    <a href="{{ url_for('add_notice') }}" class="btn btn-primary">发布新通知</a>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addNoticeModal">
+        <i class="bi bi-plus-circle"></i> 发布新通知
+    </button>
     {% endif %}
 </div>
+
+<!-- 搜索和筛选区域（仅对教师和管理员显示） -->
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('notices') }}" class="row g-3">
+            <div class="col-md-4">
+                <label for="search" class="form-label">搜索</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       placeholder="搜索标题或内容..." value="{{ request.args.get('search', '') }}">
+            </div>
+            <div class="col-md-4">
+                <label for="target" class="form-label">目标对象筛选</label>
+                <select class="form-select" id="target" name="target">
+                    <option value="">所有目标</option>
+                    <option value="" {% if request.args.get('target') == '' %}selected{% endif %}>所有用户</option>
+                    <option value="students" {% if request.args.get('target') == 'students' %}selected{% endif %}>学生</option>
+                    <option value="teachers" {% if request.args.get('target') == 'teachers' %}selected{% endif %}>教师</option>
+                    <option value="admins" {% if request.args.get('target') == 'admins' %}selected{% endif %}>管理员</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">&nbsp;</label>
+                <div>
+                    <button type="submit" class="btn btn-outline-primary">搜索</button>
+                    <a href="{{ url_for('notices') }}" class="btn btn-outline-secondary">重置</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- 学生提示信息 -->
+{% if session.get('role') == 'student' %}
+<div class="alert alert-info mb-4">
+    <i class="bi bi-info-circle"></i> 您当前看到的是所有面向学生的通知公告。
+</div>
+{% endif %}
 
 <div class="table-responsive">
     <table class="table table-striped table-hover">
@@ -21,34 +68,429 @@
                 <th>发布日期</th>
                 <th>目标</th>
                 <th>发布者</th>
-                {% if session.get('role') in ['admin', 'teacher'] %}
                 <th>操作</th>
-                {% endif %}
             </tr>
         </thead>
         <tbody>
             {% for notice in notices %}
             <tr>
-                <td>{{ notice.title }}</td>
-                <td>{{ notice.content[:100] }}...</td>
-                <td>{{ notice.date }}</td>
-                <td>{{ notice.target or '所有' }}</td>
-                <td>{{ notice.sender or '系统' }}</td>
-                {% if session.get('role') in ['admin', 'teacher'] %}
                 <td>
-                    <a href="{{ url_for('edit_notice', id=notice.id) }}" class="btn btn-sm btn-warning">编辑</a>
-                    <form action="{{ url_for('delete_notice', id=notice.id) }}" method="POST" class="d-inline delete-form">
-                        <button type="submit" class="btn btn-sm btn-danger">删除</button>
-                    </form>
+                    <strong>{{ notice.title }}</strong>
+                    {% if session.get('role') == 'student' and notice.target == 'students' %}
+                    <span class="badge bg-primary ms-1">学生专属</span>
+                    {% endif %}
                 </td>
-                {% endif %}
+                <td>
+                    <div class="content-preview">
+                        {{ notice.content[:100] }}{% if notice.content|length > 100 %}...{% endif %}
+                    </div>
+                    {% if notice.content|length > 100 %}
+                    <button type="button" class="btn btn-sm btn-link p-0 mt-1" data-bs-toggle="modal" data-bs-target="#viewNoticeModal{{ notice.id }}">
+                        查看全文
+                    </button>
+                    {% endif %}
+                </td>
+                <td>{{ notice.date }}</td>
+                <td>
+                    <span class="badge 
+                        {% if notice.target == 'students' %}bg-primary
+                        {% elif notice.target == 'teachers' %}bg-success
+                        {% elif notice.target == 'admins' %}bg-warning
+                        {% else %}bg-secondary{% endif %}">
+                        {{ notice.target or '所有用户' }}
+                    </span>
+                </td>
+                <td>{{ notice.sender or '系统' }}</td>
+                <td>
+                    <div class="btn-group" role="group">
+                        <!-- 查看详情按钮（所有用户可见） -->
+                        <button type="button" class="btn btn-sm btn-info me-1" data-bs-toggle="modal" data-bs-target="#viewNoticeModal{{ notice.id }}">
+                            <i class="bi bi-eye"></i> 查看
+                        </button>
+                        
+                        <!-- 编辑和删除按钮（仅教师和管理员可见） -->
+                        {% if session.get('role') in ['admin', 'teacher'] %}
+                        <button type="button" class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editNoticeModal{{ notice.id }}">
+                            <i class="bi bi-pencil"></i> 编辑
+                        </button>
+                        <form action="{{ url_for('delete_notice', id=notice.id) }}" method="POST" class="d-inline delete-form">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i> 删除
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="{% if session.get('role') in ['admin', 'teacher'] %}6{% else %}5{% endif %}" class="text-center text-muted">暂无通知公告。</td>
+                <td colspan="6" class="text-center text-muted">
+                    {% if session.get('role') == 'student' %}
+                    暂无面向学生的通知公告。
+                    {% else %}
+                    暂无通知公告。
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
+<!-- 添加通知模态框 -->
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="addNoticeModal" tabindex="-1" aria-labelledby="addNoticeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addNoticeModalLabel">发布新通知</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_notice') }}" id="addNoticeForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">通知标题 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="title" required 
+                               placeholder="请输入通知标题" maxlength="100">
+                        <div class="form-text">最多100个字符</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="content" class="form-label">通知内容 <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="content" name="content" rows="6" required 
+                                  placeholder="请输入通知内容" maxlength="2000"></textarea>
+                        <div class="form-text">最多2000个字符</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="target" class="form-label">目标对象</label>
+                                <select class="form-select" id="target" name="target">
+                                    <option value="">所有用户</option>
+                                    <option value="students">学生</option>
+                                    <option value="teachers">教师</option>
+                                    <option value="admins">管理员</option>
+                                </select>
+                                <div class="form-text">选择特定用户群体，留空则对所有用户可见</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="sender" class="form-label">发布者</label>
+                                <input type="text" class="form-control" id="sender" name="sender" 
+                                       placeholder="请输入发布者名称" value="{{ session.get('username', '') }}" maxlength="50">
+                                <div class="form-text">留空将使用当前登录用户名</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">发布通知</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- 查看通知详情模态框 -->
+{% for notice in notices %}
+<div class="modal fade" id="viewNoticeModal{{ notice.id }}" tabindex="-1" aria-labelledby="viewNoticeModalLabel{{ notice.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewNoticeModalLabel{{ notice.id }}">通知详情</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">标题</label>
+                    <h5 class="text-primary">{{ notice.title }}</h5>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">内容</label>
+                    <div class="border p-3 bg-light rounded" style="max-height: 400px; overflow-y: auto;">
+                        <div style="white-space: pre-wrap; line-height: 1.6;">{{ notice.content }}</div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">目标对象</label>
+                            <p>
+                                <span class="badge 
+                                    {% if notice.target == 'students' %}bg-primary
+                                    {% elif notice.target == 'teachers' %}bg-success
+                                    {% elif notice.target == 'admins' %}bg-warning
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ notice.target or '所有用户' }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">发布者</label>
+                            <p>{{ notice.sender or '系统' }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">发布日期</label>
+                            <p>{{ notice.date }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                {% if session.get('role') in ['admin', 'teacher'] %}
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editNoticeModal{{ notice.id }}" data-bs-dismiss="modal">
+                    <i class="bi bi-pencil"></i> 编辑通知
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- 编辑通知模态框 -->
+{% for notice in notices %}
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="editNoticeModal{{ notice.id }}" tabindex="-1" aria-labelledby="editNoticeModalLabel{{ notice.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editNoticeModalLabel{{ notice.id }}">编辑通知</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('edit_notice', id=notice.id) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="title{{ notice.id }}" class="form-label">通知标题 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title{{ notice.id }}" name="title" 
+                               value="{{ notice.title }}" required maxlength="100">
+                        <div class="form-text">最多100个字符</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="content{{ notice.id }}" class="form-label">通知内容 <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="content{{ notice.id }}" name="content" rows="6" required maxlength="2000">{{ notice.content }}</textarea>
+                        <div class="form-text">最多2000个字符</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="target{{ notice.id }}" class="form-label">目标对象</label>
+                                <select class="form-select" id="target{{ notice.id }}" name="target">
+                                    <option value="" {% if not notice.target %}selected{% endif %}>所有用户</option>
+                                    <option value="students" {% if notice.target == 'students' %}selected{% endif %}>学生</option>
+                                    <option value="teachers" {% if notice.target == 'teachers' %}selected{% endif %}>教师</option>
+                                    <option value="admins" {% if notice.target == 'admins' %}selected{% endif %}>管理员</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="sender{{ notice.id }}" class="form-label">发布者</label>
+                                <input type="text" class="form-control" id="sender{{ notice.id }}" name="sender" 
+                                       value="{{ notice.sender or session.get('username', '') }}" maxlength="50">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存修改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 删除确认
+    const deleteForms = document.querySelectorAll('.delete-form');
+    deleteForms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!confirm('确定要删除此通知吗？此操作不可恢复。')) {
+                event.preventDefault();
+            }
+        });
+    });
+    
+    // 表单验证
+    const forms = document.querySelectorAll('form[method="POST"]');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            const requiredFields = form.querySelectorAll('[required]');
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.classList.add('is-invalid');
+                }
+            });
+            
+            // 验证字符长度
+            const titleFields = form.querySelectorAll('input[name="title"]');
+            titleFields.forEach(field => {
+                if (field.value.length > 100) {
+                    isValid = false;
+                    field.classList.add('is-invalid');
+                }
+            });
+            
+            const contentFields = form.querySelectorAll('textarea[name="content"]');
+            contentFields.forEach(field => {
+                if (field.value.length > 2000) {
+                    isValid = false;
+                    field.classList.add('is-invalid');
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('请检查表单中的错误信息！');
+            }
+        });
+    });
+    
+    // 实时验证
+    const inputFields = document.querySelectorAll('input, textarea, select');
+    inputFields.forEach(field => {
+        field.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+        });
+    });
+    
+    // 添加模态框重置
+    const addModal = document.getElementById('addNoticeModal');
+    if (addModal) {
+        addModal.addEventListener('hidden.bs.modal', function() {
+            const form = this.querySelector('form');
+            form.reset();
+            // 清除验证状态
+            const invalidFields = form.querySelectorAll('.is-invalid');
+            invalidFields.forEach(field => {
+                field.classList.remove('is-invalid');
+            });
+        });
+    }
+    
+    // 字符计数器
+    function updateCharCounters() {
+        const titleFields = document.querySelectorAll('input[name="title"]');
+        titleFields.forEach(field => {
+            const counter = field.parentElement.querySelector('.char-counter');
+            if (counter) {
+                counter.textContent = `${field.value.length}/100`;
+            }
+        });
+        
+        const contentFields = document.querySelectorAll('textarea[name="content"]');
+        contentFields.forEach(field => {
+            const counter = field.parentElement.querySelector('.char-counter');
+            if (counter) {
+                counter.textContent = `${field.value.length}/2000`;
+            }
+        });
+    }
+    
+    // 初始化字符计数器
+    updateCharCounters();
+    
+    // 监听输入事件更新计数器
+    document.addEventListener('input', function(e) {
+        if (e.target.matches('input[name="title"], textarea[name="content"]')) {
+            updateCharCounters();
+        }
+    });
+});
+</script>
+
+<style>
+.delete-form {
+    display: inline-block;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+.is-invalid {
+    border-color: #dc3545;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+.btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.content-preview {
+    max-height: 3em;
+    overflow: hidden;
+    line-height: 1.5;
+}
+
+.char-counter {
+    text-align: right;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .modal-lg {
+        margin: 0.5rem;
+    }
+    
+    .d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .d-flex h4 {
+        margin-bottom: 1rem;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+    }
+    
+    .btn-group .btn {
+        margin-bottom: 0.25rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+}
+</style>
 {% endblock %}

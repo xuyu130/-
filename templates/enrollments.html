@@ -1,4 +1,3 @@
-<!-- enrollments.html -->
 {% extends 'layout.html' %}
 
 {% block title %}{{ student.name }} 的课程与成绩{% endblock %}
@@ -10,7 +9,9 @@
     <h4>已选课程列表</h4>
     <div>
         {% if session.get('role') in ['admin', 'teacher'] %}
-        <a href="{{ url_for('add_enrollment', student_id=student.id) }}" class="btn btn-primary">添加课程/成绩</a>
+        <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addEnrollmentModal">
+            添加课程/成绩
+        </button>
         {% endif %}
         <a href="{{ url_for('students') }}" class="btn btn-secondary">返回学生列表</a>
     </div>
@@ -36,7 +37,9 @@
                 <td>{{ enrollment.performance_score if enrollment.performance_score is not none else 'N/A' }}</td>
                 {% if session.get('role') in ['admin', 'teacher'] %}
                 <td>
-                    <a href="{{ url_for('edit_enrollment', enrollment_id=enrollment.id) }}" class="btn btn-sm btn-warning">编辑</a>
+                    <button type="button" class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editEnrollmentModal{{ enrollment.id }}">
+                        编辑
+                    </button>
                     <form action="{{ url_for('delete_enrollment', enrollment_id=enrollment.id) }}" method="POST" class="d-inline delete-form">
                         <button type="submit" class="btn btn-sm btn-danger">删除</button>
                     </form>
@@ -51,4 +54,187 @@
         </tbody>
     </table>
 </div>
+
+<!-- 添加选课记录模态框 -->
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="addEnrollmentModal" tabindex="-1" aria-labelledby="addEnrollmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addEnrollmentModalLabel">为 {{ student.name }} 添加课程/成绩</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_enrollment', student_id=student.id) }}">
+                <div class="modal-body">
+                    <input type="hidden" name="student_id" value="{{ student.id }}">
+                    
+                    <div class="mb-3">
+                        <label for="course_id" class="form-label">选择课程 <span class="text-danger">*</span></label>
+                        <select class="form-select" id="course_id" name="course_id" required>
+                            <option value="" selected disabled>请选择课程</option>
+                            {% for course in available_courses %}
+                            <option value="{{ course.id }}">{{ course.name }}</option>
+                            {% else %}
+                            <option value="" disabled>暂无可选课程</option>
+                            {% endfor %}
+                        </select>
+                        {% if not available_courses %}
+                        <div class="form-text text-warning">该学生已选修所有课程，或系统中暂无课程。</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="exam_score" class="form-label">考试成绩</label>
+                        <input type="number" class="form-control" id="exam_score" name="exam_score" 
+                               min="0" max="100" step="0.1" placeholder="请输入考试成绩">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="performance_score" class="form-label">平时表现成绩</label>
+                        <input type="number" class="form-control" id="performance_score" name="performance_score" 
+                               min="0" max="100" step="0.1" placeholder="请输入平时表现成绩">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary" {% if not available_courses %}disabled{% endif %}>添加课程/成绩</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- 编辑选课记录模态框 -->
+{% for enrollment in enrollments %}
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="editEnrollmentModal{{ enrollment.id }}" tabindex="-1" aria-labelledby="editEnrollmentModalLabel{{ enrollment.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editEnrollmentModalLabel{{ enrollment.id }}">编辑 {{ student.name }} 的 {{ enrollment.course_name }} 成绩</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('edit_enrollment', enrollment_id=enrollment.id) }}">
+                <div class="modal-body">
+                    <input type="hidden" name="referrer" value="{{ request.url }}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">学生姓名</label>
+                        <input type="text" class="form-control" value="{{ student.name }}" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">课程</label>
+                        <input type="text" class="form-control" value="{{ enrollment.course_name }}" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="exam_score{{ enrollment.id }}" class="form-label">考试成绩</label>
+                        <input type="number" class="form-control" id="exam_score{{ enrollment.id }}" 
+                               name="exam_score" value="{{ enrollment.exam_score or '' }}" 
+                               min="0" max="100" step="0.1" placeholder="请输入考试成绩">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="performance_score{{ enrollment.id }}" class="form-label">平时表现成绩</label>
+                        <input type="number" class="form-control" id="performance_score{{ enrollment.id }}" 
+                               name="performance_score" value="{{ enrollment.performance_score or '' }}" 
+                               min="0" max="100" step="0.1" placeholder="请输入平时表现成绩">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 删除确认
+    const deleteForms = document.querySelectorAll('.delete-form');
+    deleteForms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!confirm('确定要删除这条选课记录吗？')) {
+                event.preventDefault();
+            }
+        });
+    });
+    
+    // 表单验证
+    const forms = document.querySelectorAll('form[method="POST"]');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            const requiredFields = form.querySelectorAll('[required]');
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.classList.add('is-invalid');
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('请检查表单中的错误信息！');
+            }
+        });
+    });
+    
+    // 实时验证
+    const inputFields = document.querySelectorAll('input, select');
+    inputFields.forEach(field => {
+        field.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+        });
+    });
+    
+    // 添加模态框重置
+    const addModal = document.getElementById('addEnrollmentModal');
+    if (addModal) {
+        addModal.addEventListener('hidden.bs.modal', function() {
+            const form = this.querySelector('form');
+            form.reset();
+            // 清除验证状态
+            const invalidFields = form.querySelectorAll('.is-invalid');
+            invalidFields.forEach(field => {
+                field.classList.remove('is-invalid');
+            });
+        });
+    }
+});
+</script>
+
+<style>
+.delete-form {
+    display: inline-block;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.is-invalid {
+    border-color: #dc3545;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+.modal-body .form-control:read-only {
+    background-color: #f8f9fa;
+    opacity: 1;
+}
+</style>
 {% endblock %}
