@@ -5,24 +5,57 @@
 {% block content %}
 <div class="row justify-content-center mt-5">
     <div class="col-md-6 col-lg-4">
-        <div class="card">
-            <div class="card-header text-center">
-                <h3>用户登录</h3>
+        <div class="card shadow-sm">  <!-- 增加阴影效果 -->
+            <div class="card-header text-center bg-primary text-white">  <!-- 标题栏配色 -->
+                <h3 class="mb-0">用户登录</h3>
             </div>
             <div class="card-body">
+                <!-- 显示登录错误信息（关键添加） -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
                 <form method="POST" action="{{ url_for('login') }}">
                     <div class="mb-3">
                         <label for="username" class="form-label">用户名</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
+                        <input type="text" class="form-control" id="username" name="username" 
+                               required autofocus>  <!-- 自动聚焦到用户名输入框 -->
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label">密码</label>
                         <input type="password" class="form-control" id="password" name="password" required>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">登录</button>
+                    
+                    <!-- 增加"记住我"选项（可选） -->
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="remember_me" name="remember_me">
+                        <label class="form-check-label" for="remember_me">记住我</label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-2">登录</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<!-- 可选：添加自定义样式增强交互体验 -->
+<style>
+    .form-control:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    .btn-primary:hover {
+        opacity: 0.9;
+    }
+</style>
 {% endblock %}
