@@ -1548,6 +1548,114 @@ def setup_routes(app, service_manager):
         
         return jsonify(result)
 
+    # === 通信功能路由 ===
+    @app.route('/communication/send_notification', methods=['POST'])
+    @teacher_or_admin_required
+    def send_notification():
+        """发送通知给家长"""
+        try:
+            parent_id = request.form.get('parent_id')
+            title = request.form.get('title')
+            content = request.form.get('content')
+            
+            if not parent_id or not title or not content:
+                flash('请填写完整的信息', 'danger')
+                return redirect(request.referrer or url_for('parents'))
+            
+            communication_service = service_manager.communication_service
+            success, message = communication_service.send_notification_to_parent(
+                int(parent_id), title, content, session.get('username')
+            )
+            
+            if success:
+                flash(message, 'success')
+            else:
+                flash(f'发送失败: {message}', 'danger')
+                
+        except Exception as e:
+            flash(f'发送过程中出现错误: {str(e)}', 'danger')
+        
+        return redirect(request.referrer or url_for('parents'))
+    
+    @app.route('/communication/send_bulk_notification', methods=['POST'])
+    @teacher_or_admin_required
+    def send_bulk_notification():
+        """群发通知给所有家长"""
+        try:
+            title = request.form.get('title')
+            content = request.form.get('content')
+            
+            if not title or not content:
+                flash('请填写完整的信息', 'danger')
+                return redirect(request.referrer or url_for('parents'))
+            
+            communication_service = service_manager.communication_service
+            success, message, count = communication_service.send_notification_to_all_parents(
+                title, content, session.get('username')
+            )
+            
+            if success:
+                flash(message, 'success')
+            else:
+                flash(f'发送失败: {message}', 'danger')
+                
+        except Exception as e:
+            flash(f'发送过程中出现错误: {str(e)}', 'danger')
+        
+        return redirect(request.referrer or url_for('parents'))
+    
+    @app.route('/communication/send_sms', methods=['POST'])
+    @teacher_or_admin_required
+    def send_sms():
+        """发送短信给家长"""
+        try:
+            parent_id = request.form.get('parent_id')
+            message = request.form.get('message')
+            
+            if not parent_id or not message:
+                flash('请填写完整的信息', 'danger')
+                return redirect(request.referrer or url_for('parents'))
+            
+            communication_service = service_manager.communication_service
+            success, msg = communication_service.send_sms_to_parent(int(parent_id), message)
+            
+            if success:
+                flash(msg, 'success')
+            else:
+                flash(f'发送失败: {msg}', 'danger')
+                
+        except Exception as e:
+            flash(f'发送过程中出现错误: {str(e)}', 'danger')
+        
+        return redirect(request.referrer or url_for('parents'))
+    
+    @app.route('/communication/send_email', methods=['POST'])
+    @teacher_or_admin_required
+    def send_email():
+        """发送邮件给家长"""
+        try:
+            parent_id = request.form.get('parent_id')
+            subject = request.form.get('subject')
+            content = request.form.get('content')
+            
+            if not parent_id or not subject or not content:
+                flash('请填写完整的信息', 'danger')
+                return redirect(request.referrer or url_for('parents'))
+            
+            communication_service = service_manager.communication_service
+            success, msg = communication_service.send_email_to_parent(int(parent_id), subject, content)
+            
+            if success:
+                flash(msg, 'success')
+            else:
+                flash(f'发送失败: {msg}', 'danger')
+                
+        except Exception as e:
+            flash(f'发送过程中出现错误: {str(e)}', 'danger')
+        
+        return redirect(request.referrer or url_for('parents'))
+
+# ... existing code ...
     # === 错误处理路由 ===
     @app.errorhandler(404)
     def not_found(error):

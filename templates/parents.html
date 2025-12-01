@@ -58,7 +58,7 @@
         </thead>
         <tbody>
             {% for parent in parents %}
-            <tr>
+            <tr data-parent-id="{{ parent.id }}">
                 <td><strong>{{ parent.student_name }}</strong></td>
                 <td>{{ parent.student_id_str or parent.student_id }}</td>
                 <td>{{ parent.parent_name }}</td>
@@ -88,6 +88,167 @@
         </tbody>
     </table>
 </div>
+
+<!-- 在家长列表表格之后添加新的通信功能区域 -->
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0">家长通信功能</h5>
+    </div>
+    <div class="card-body">
+        <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#sendBulkNotificationModal">
+                <i class="bi bi-megaphone"></i> 群发通知
+            </button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- 发送通知模态框 -->
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="sendNotificationModal" tabindex="-1" aria-labelledby="sendNotificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="sendNotificationModalLabel">发送通知</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('send_notification') }}">
+                <div class="modal-body">
+                    <input type="hidden" id="notification_parent_id" name="parent_id" value="">
+                    
+                    <div class="mb-3">
+                        <label for="notification_title" class="form-label">通知标题 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="notification_title" name="title" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notification_content" class="form-label">通知内容 <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="notification_content" name="content" rows="4" required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notification_receiver" class="form-label">接收人</label>
+                        <input type="text" class="form-control" id="notification_receiver" readonly>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">发送通知</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- 群发通知模态框 - 修复后 -->
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="sendBulkNotificationModal" tabindex="-1" aria-labelledby="sendBulkNotificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="sendBulkNotificationModalLabel">群发通知给所有家长</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('send_bulk_notification') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="bulk_notification_title" class="form-label">通知标题 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="bulk_notification_title" name="title" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="bulk_notification_content" class="form-label">通知内容 <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="bulk_notification_content" name="content" rows="4" required></textarea>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 此操作将向系统中所有家长发送通知，请谨慎操作。
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-success">群发通知</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- 发送短信模态框 -->
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="sendSmsModal" tabindex="-1" aria-labelledby="sendSmsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="sendSmsModalLabel">发送短信</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('send_sms') }}">
+                <div class="modal-body">
+                    <input type="hidden" id="sms_parent_id" name="parent_id" value="">
+                    
+                    <div class="mb-3">
+                        <label for="sms_message" class="form-label">短信内容 <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="sms_message" name="message" rows="3" maxlength="140" required></textarea>
+                        <div class="form-text">最多140个字符</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="sms_receiver" class="form-label">接收人</label>
+                        <input type="text" class="form-control" id="sms_receiver" readonly>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">发送短信</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- 发送邮件模态框 -->
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="sendEmailModal" tabindex="-1" aria-labelledby="sendEmailModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="sendEmailModalLabel">发送邮件</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('send_email') }}">
+                <div class="modal-body">
+                    <input type="hidden" id="email_parent_id" name="parent_id" value="">
+                    
+                    <div class="mb-3">
+                        <label for="email_subject" class="form-label">邮件主题 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="email_subject" name="subject" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email_content" class="form-label">邮件内容 <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="email_content" name="content" rows="5" required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email_receiver" class="form-label">接收人</label>
+                        <input type="text" class="form-control" id="email_receiver" readonly>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">发送邮件</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <!-- 添加家长信息模态框 -->
 {% if session.get('role') in ['admin', 'teacher'] %}
@@ -249,12 +410,80 @@
 </div>
 {% endif %}
 {% endfor %}
-
 {% endblock %}
 
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // 为每个家长行添加通信按钮
+    var parentRows = document.querySelectorAll('tbody tr[data-parent-id]');
+    parentRows.forEach(function(row) {
+        var parentId = row.getAttribute('data-parent-id');
+        var parentName = row.querySelector('td:nth-child(3)').textContent;
+        var phone = row.querySelector('td:nth-child(5)').textContent;
+        var email = row.querySelector('td:nth-child(6)').textContent;
+        
+        // 添加操作列
+        var actionsCell = row.querySelector('td:last-child');
+        if (actionsCell) {
+            var divider = document.createElement('hr');
+            divider.className = 'dropdown-divider';
+            actionsCell.appendChild(divider);
+            
+            var dropdownDiv = document.createElement('div');
+            dropdownDiv.className = 'dropdown mt-1';
+            
+            var button = document.createElement('button');
+            button.className = 'btn btn-sm btn-info dropdown-toggle';
+            button.type = 'button';
+            button.setAttribute('data-bs-toggle', 'dropdown');
+            button.innerHTML = '<i class="bi bi-envelope"></i> 通信';
+            
+            var dropdownMenu = document.createElement('ul');
+            dropdownMenu.className = 'dropdown-menu';
+            
+            // 发送通知选项
+            var notificationItem = document.createElement('li');
+            var notificationLink = document.createElement('a');
+            notificationLink.className = 'dropdown-item';
+            notificationLink.href = '#';
+            notificationLink.innerHTML = '<i class="bi bi-megaphone"></i> 发送通知';
+            notificationLink.onclick = function() {
+                openNotificationModal(parentId, parentName);
+            };
+            notificationItem.appendChild(notificationLink);
+            dropdownMenu.appendChild(notificationItem);
+            
+            // 发送短信选项
+            var smsItem = document.createElement('li');
+            var smsLink = document.createElement('a');
+            smsLink.className = 'dropdown-item';
+            smsLink.href = '#';
+            smsLink.innerHTML = '<i class="bi bi-phone"></i> 发送短信';
+            smsLink.onclick = function() {
+                openSmsModal(parentId, parentName, phone);
+            };
+            smsItem.appendChild(smsLink);
+            dropdownMenu.appendChild(smsItem);
+            
+            // 发送邮件选项
+            var emailItem = document.createElement('li');
+            var emailLink = document.createElement('a');
+            emailLink.className = 'dropdown-item';
+            emailLink.href = '#';
+            emailLink.innerHTML = '<i class="bi bi-envelope-at"></i> 发送邮件';
+            emailLink.onclick = function() {
+                openEmailModal(parentId, parentName, email);
+            };
+            emailItem.appendChild(emailLink);
+            dropdownMenu.appendChild(emailItem);
+            
+            dropdownDiv.appendChild(button);
+            dropdownDiv.appendChild(dropdownMenu);
+            actionsCell.appendChild(dropdownDiv);
+        }
+    });
+
     // 删除确认
     const deleteForms = document.querySelectorAll('.delete-form');
     deleteForms.forEach(form => {
@@ -344,6 +573,38 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// 打开发送通知模态框
+function openNotificationModal(parentId, parentName) {
+    document.getElementById('notification_parent_id').value = parentId;
+    document.getElementById('notification_receiver').value = parentName;
+    document.getElementById('notification_title').value = '';
+    document.getElementById('notification_content').value = '';
+    
+    var modal = new bootstrap.Modal(document.getElementById('sendNotificationModal'));
+    modal.show();
+}
+
+// 打开发送短信模态框
+function openSmsModal(parentId, parentName, phone) {
+    document.getElementById('sms_parent_id').value = parentId;
+    document.getElementById('sms_receiver').value = parentName + ' (' + phone + ')';
+    document.getElementById('sms_message').value = '';
+    
+    var modal = new bootstrap.Modal(document.getElementById('sendSmsModal'));
+    modal.show();
+}
+
+// 打开发送邮件模态框
+function openEmailModal(parentId, parentName, email) {
+    document.getElementById('email_parent_id').value = parentId;
+    document.getElementById('email_receiver').value = parentName + ' (' + email + ')';
+    document.getElementById('email_subject').value = '';
+    document.getElementById('email_content').value = '';
+    
+    var modal = new bootstrap.Modal(document.getElementById('sendEmailModal'));
+    modal.show();
+}
 </script>
 
 <style>

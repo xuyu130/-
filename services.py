@@ -1412,5 +1412,94 @@ class ServiceManager:
         self.schedule_service = ScheduleService()
         self.statistics_service = StatisticsService()
 
+class CommunicationService(BaseService):
+    """通信服务类 - 处理通知、短信和邮件发送"""
+
+    def __init__(self):
+        super().__init__()
+        self.parent_repo = self.repo_manager.parent_repo
+        self.student_repo = self.repo_manager.student_repo
+        self.notice_repo = self.repo_manager.notice_repo
+
+    def send_notification_to_parent(self, parent_id: int, title: str, content: str, sender: str) -> Tuple[bool, str]:
+        """向指定家长发送通知"""
+        try:
+            # 获取家长信息
+            parent = self.parent_repo.get_by_id(parent_id)
+            if not parent:
+                return False, "家长信息不存在"
+
+            # 创建通知记录
+            notice_id = self.notice_repo.get_next_id()
+            notice = Notice(
+                id=notice_id,
+                title=title,
+                content=content,
+                target=f"parent_{parent_id}",
+                sender=sender,
+                date=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            )
+
+            self.notice_repo.create(notice)
+            self.notice_repo.save_data()
+
+            # 这里应该集成实际的通知发送逻辑（如短信网关、邮件服务器等）
+            # 目前只是模拟发送
+
+            return True, "通知发送成功"
+        except Exception as e:
+            return False, f"发送失败: {str(e)}"
+
+    def send_notification_to_all_parents(self, title: str, content: str, sender: str) -> Tuple[bool, str, int]:
+        """向所有家长发送通知"""
+        try:
+            parents = self.parent_repo.get_all()
+            success_count = 0
+
+            for parent in parents:
+                success, message = self.send_notification_to_parent(parent.id, title, content, sender)
+                if success:
+                    success_count += 1
+
+            return True, f"通知发送完成，成功发送 {success_count}/{len(parents)} 条", success_count
+        except Exception as e:
+            return False, f"批量发送失败: {str(e)}", 0
+
+    def send_sms_to_parent(self, parent_id: int, message: str) -> Tuple[bool, str]:
+        """向指定家长发送短信（模拟实现）"""
+        try:
+            parent = self.parent_repo.get_by_id(parent_id)
+            if not parent:
+                return False, "家长信息不存在"
+
+            if not parent.contact_phone:
+                return False, "家长未提供联系电话"
+
+            # 这里应该集成真实的短信发送接口
+            # 目前只是模拟发送过程
+            print(f"SMS模拟发送至 {parent.contact_phone}: {message}")
+
+            return True, f"短信已发送至 {parent.contact_phone}"
+        except Exception as e:
+            return False, f"短信发送失败: {str(e)}"
+
+    def send_email_to_parent(self, parent_id: int, subject: str, content: str) -> Tuple[bool, str]:
+        """向指定家长发送邮件（模拟实现）"""
+        try:
+            parent = self.parent_repo.get_by_id(parent_id)
+            if not parent:
+                return False, "家长信息不存在"
+
+            if not parent.email:
+                return False, "家长未提供邮箱地址"
+
+            # 这里应该集成真实的邮件发送服务
+            # 目前只是模拟发送过程
+            print(f"Email模拟发送至 {parent.email}, 主题: {subject}")
+            return True,print(f"邮件已发送至 {parent.email}")
+        except Exception as e:
+            return False, print(f"邮件发送失败: {str(e)}")
+
+# ... existing code ...
 # 全局服务管理器实例
 service_manager = ServiceManager()
