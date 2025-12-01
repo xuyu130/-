@@ -327,11 +327,20 @@
                 "address": ""
             },
             {
-                "id": 2,
-                "student_id": 3,
-                "parent_name": "11",
-                "relationship": "祖父",
-                "contact_phone": "11111111111",
+                "id": 3,
+                "student_id": 2,
+                "parent_name": "231321",
+                "relationship": "母亲",
+                "contact_phone": "11111121121",
+                "email": "3@qq.com",
+                "address": "1"
+            },
+            {
+                "id": 4,
+                "student_id": 1,
+                "parent_name": "22",
+                "relationship": "父亲",
+                "contact_phone": "22222222222",
                 "email": "3@qq.com",
                 "address": ""
             }
@@ -519,7 +528,7 @@
         "courses": 6,
         "enrollments": 34,
         "attendance": 13,
-        "parents": 3,
+        "parents": 5,
         "notices": 12,
         "schedules": 5,
         "attendances": 3,

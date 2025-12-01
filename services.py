@@ -895,12 +895,17 @@ class ParentService(BaseService):
         """获取学生的家长信息"""
         return self.parent_repo.get_by_student_id(student_id)
     
-    def update_parent(self, parent_id: int, parent_name: str, relationship: str, 
+    def update_parent(self, parent_id: int, student_id: int, parent_name: str, relationship: str, 
                      contact_phone: str, email: str = '', address: str = '') -> Tuple[bool, Optional[Parent], str]:
         """更新家长信息"""
         parent = self.parent_repo.get_by_id(parent_id)
         if not parent:
             return False, None, '家长信息不存在'
+        
+        # 验证学生存在
+        student = self.student_repo.get_by_id(student_id)
+        if not student:
+            return False, None, '学生不存在'
         
         # 验证必填字段
         if not parent_name or not relationship or not contact_phone:
@@ -911,12 +916,13 @@ class ParentService(BaseService):
             return False, None, '请输入正确的11位手机号码'
         
         # 验证关系唯一性（排除当前记录）
-        existing_parent = self.parent_repo.get_by_relationship(parent.student_id, relationship)
+        existing_parent = self.parent_repo.get_by_relationship(student_id, relationship)
         if existing_parent and existing_parent.id != parent_id:
             return False, None, f'该学生已经存在{relationship}的联系信息'
         
         try:
             update_data = {
+                'student_id': student_id,
                 'parent_name': parent_name,
                 'relationship': relationship,
                 'contact_phone': contact_phone,
@@ -1229,14 +1235,19 @@ class StatisticsService(BaseService):
         self.enrollment_repo = self.repo_manager.enrollment_repo
         self.reward_punishment_repo = self.repo_manager.reward_punishment_repo
     
-    def get_general_statistics(self) -> Dict[str, Any]:
+    def get_general_statistics(self, class_filter='') -> Dict[str, Any]:
         """获取总体统计信息"""
-        total_students = len(self.student_repo.get_all())
+        # 获取所有学生或特定班级的学生
+        all_students = self.student_repo.get_all()
+        if class_filter:
+            all_students = [s for s in all_students if s.class_name == class_filter]
+            
+        total_students = len(all_students)
         total_courses = len(self.course_repo.get_all())
         
         # 按性别统计学生
         students_by_gender = {}
-        for student in self.student_repo.get_all():
+        for student in all_students:
             gender = student.gender
             students_by_gender[gender] = students_by_gender.get(gender, 0) + 1
         
@@ -1248,12 +1259,17 @@ class StatisticsService(BaseService):
                 'count': count
             })
         
+        # 获取筛选后的学生ID列表
+        student_ids = [s.id for s in all_students]
+        
         # 考勤概览 (过去7天)
         today = datetime.date.today()
         attendance_summary = []
         for i in range(7):
             date = (today - datetime.timedelta(days=i)).strftime('%Y-%m-%d')
-            day_attendance = self.attendance_repo.get_by_date(date)
+            # 只获取筛选后班级的学生考勤
+            day_attendance = [a for a in self.attendance_repo.get_by_date(date) 
+                             if a.student_id in student_ids]
             
             # 统计当天出勤情况
             present_count = sum(1 for a in day_attendance if a.status == 'present')
@@ -1267,9 +1283,13 @@ class StatisticsService(BaseService):
                 'leave_count': leave_count
             })
         
-        # 平均成绩统计
+        # 平均成绩统计（仅限筛选后班级的学生）
         course_scores = {}
         for enrollment in self.enrollment_repo.get_all():
+            # 只统计筛选后班级的学生
+            if enrollment.student_id not in student_ids:
+                continue
+                
             if enrollment.course_id not in course_scores:
                 course_scores[enrollment.course_id] = {
                     'exam_scores': [], 
@@ -1298,9 +1318,13 @@ class StatisticsService(BaseService):
                     'avg_performance_score': round(avg_performance, 2) if avg_performance else 'N/A'
                 })
         
-        # 奖励处分概览
+        # 奖励处分概览（仅限筛选后班级的学生）
         rp_summary = {}
         for record in self.reward_punishment_repo.get_all():
+            # 只统计筛选后班级的学生
+            if record.student_id not in student_ids:
+                continue
+                
             rp_type = record.type
             rp_summary[rp_type] = rp_summary.get(rp_type, 0) + 1
         

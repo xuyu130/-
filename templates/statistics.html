@@ -6,6 +6,35 @@
 <div class="container-fluid">
     <h1 class="mb-4">统计分析与辅助决策</h1>
     
+    <!-- 班级筛选 -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="classFilter" class="form-label">班级筛选</label>
+                    <select name="class" id="classFilter" class="form-select">
+                        <option value="">全部班级</option>
+                        {% for class_name in unique_classes %}
+                        <option value="{{ class_name }}" {% if class_filter == class_name %}selected{% endif %}>
+                            {{ class_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <div class="btn-group" role="group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel"></i> 筛选
+                        </button>
+                        <a href="{{ url_for('statistics') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-clockwise"></i> 重置
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <!-- 顶部概览卡片 -->
     <div class="row mb-4">
         <div class="col-xl-3 col-md-6 mb-4">
@@ -221,9 +250,9 @@
                             <div class="d-flex justify-content-between">
                                 <span class="font-weight-bold">{{ rec.date }}</span>
                                 <div>
-                                    <span class="badge badge-success mr-1">出勤: {{ rec.present_count|default(0) }}</span>
-                                    <span class="badge badge-danger mr-1">缺勤: {{ rec.absent_count|default(0) }}</span>
-                                    <span class="badge badge-warning text-dark">请假: {{ rec.leave_count|default(0) }}</span>
+                                    <span class="badge bg-success me-1">出勤: {{ rec.present_count|default(0) }}</span>
+                                    <span class="badge bg-danger me-1">缺勤: {{ rec.absent_count|default(0) }}</span>
+                                    <span class="badge bg-warning text-dark">请假: {{ rec.leave_count|default(0) }}</span>
                                 </div>
                             </div>
                         </div>
@@ -257,11 +286,11 @@
                                     <div class="d-flex justify-content-between">
                                         <span>
                                             {% if item.type == 'reward' or item.type == '奖励' %}
-                                                <i class="fas fa-award text-success mr-2"></i>奖励
+                                                <i class="fas fa-award text-success me-2"></i>奖励
                                             {% elif item.type == 'punishment' or item.type == '处分' %}
-                                                <i class="fas fa-exclamation-triangle text-danger mr-2"></i>处分
+                                                <i class="fas fa-exclamation-triangle text-danger me-2"></i>处分
                                             {% else %}
-                                                <i class="fas fa-question-circle text-secondary mr-2"></i>{{ item.type }}
+                                                <i class="fas fa-question-circle text-secondary me-2"></i>{{ item.type }}
                                             {% endif %}
                                         </span>
                                         <span class="font-weight-bold">{{ item.count|default(0) }}</span>

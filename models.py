@@ -225,8 +225,7 @@ class DataInitializer:
                 semester='2023-2024 Fall'
             )
         ]
-        
-        
+             
         # 其他空表
         attendance = []
         rewardpunishments= []

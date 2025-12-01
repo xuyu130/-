@@ -115,8 +115,29 @@ def setup_routes(app, service_manager):
     @teacher_or_admin_required
     def students():
         student_service = service_manager.student_service
-        students = sorted(student_service.get_all_students(), key=lambda x: x.student_id)
-        return render_template('students.html', students=[s.to_dict() for s in students])
+        # 获取查询参数
+        class_filter = request.args.get('class', '')
+        search_query = request.args.get('search', '')
+        
+        # 获取所有学生
+        all_students = student_service.get_all_students()
+        
+        # 提取所有唯一班级名称
+        unique_classes = list(set([s.class_name for s in all_students if s.class_name]))
+        unique_classes.sort()
+        
+        # 根据班级筛选
+        if class_filter:
+            all_students = [s for s in all_students if s.class_name == class_filter]
+        
+        # 根据姓名搜索
+        if search_query:
+            all_students = [s for s in all_students if search_query.lower() in s.name.lower()]
+        
+        students = sorted(all_students, key=lambda x: x.student_id)
+        return render_template('students.html', students=[s.to_dict() for s in students], 
+                              class_filter=class_filter, search_query=search_query, 
+                              unique_classes=unique_classes)
 
     @app.route('/students/add', methods=['POST'])
     @teacher_or_admin_required
@@ -797,8 +818,9 @@ def setup_routes(app, service_manager):
             email = request.form.get('email', '')
             address = request.form.get('address', '')
 
+            # 更新家长信息，包括学生ID
             success, updated_parent, message = parent_service.update_parent(
-                id, parent_name, relationship, contact_phone, email, address
+                id, student_id, parent_name, relationship, contact_phone, email, address
             )
             
             if success:
@@ -809,7 +831,6 @@ def setup_routes(app, service_manager):
         
         return redirect(url_for('parents'))
 
-    # routes.py (补全家长信息删除路由)
 
     @app.route('/parents/delete/<int:id>', methods=['POST'])
     @teacher_or_admin_required
@@ -824,6 +845,7 @@ def setup_routes(app, service_manager):
         try:
             success = parent_service.parent_repo.delete(id)
             if success:
+                parent_service.parent_repo.save_data()  # 添加这行来保存数据
                 g.data_modified = True
                 flash('家长信息删除成功！', 'success')
             else:
@@ -1229,8 +1251,16 @@ def setup_routes(app, service_manager):
     @login_required
     def statistics():
         statistics_service = service_manager.statistics_service
+        # 获取班级筛选参数
+        class_filter = request.args.get('class', '')
         
-        stats_data = statistics_service.get_general_statistics()
+        stats_data = statistics_service.get_general_statistics(class_filter)
+        
+        # 获取所有班级名称用于下拉框
+        student_service = service_manager.student_service
+        all_students = student_service.get_all_students()
+        unique_classes = list(set([s.class_name for s in all_students if s.class_name]))
+        unique_classes.sort()
         
         return render_template('statistics.html', 
                             total_students=stats_data['total_students'],
@@ -1238,7 +1268,9 @@ def setup_routes(app, service_manager):
                             total_courses=stats_data['total_courses'],
                             attendance_summary=stats_data['attendance_summary'],
                             avg_scores=stats_data['avg_scores'],
-                            rp_summary=stats_data['rp_summary'])
+                            rp_summary=stats_data['rp_summary'],
+                            class_filter=class_filter,
+                            unique_classes=unique_classes)
 
     @app.route('/stu_statistics')
     @student_required
