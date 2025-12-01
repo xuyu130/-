@@ -703,6 +703,34 @@ def setup_routes(app, service_manager):
         
         return redirect(url_for('rewards_punishments'))
 
+    @app.route('/my_rewards_punishments')
+    @student_required
+    def my_rewards_punishments():
+        """学生查看自己的奖惩记录"""
+        rp_service = service_manager.reward_punishment_service
+        user_service = service_manager.user_service
+        
+        current_user = user_service.get_user_by_id(session['user_id'])
+        if not current_user or not current_user.student_info_id:
+            flash('无法获取您的学生信息。', 'danger')
+            return redirect(url_for('index'))
+        
+        records = rp_service.get_student_records(current_user.student_info_id)
+        records = sorted(records, key=lambda x: x.date, reverse=True)
+        
+        return render_template('rewards_punishments.html', 
+                            records=[r.to_dict() for r in records], 
+                            is_student_view=True)
+
+    @app.route('/rewards_punishments/statistics')
+    @teacher_or_admin_required
+    def rewards_punishments_statistics():
+        """奖惩统计页面"""
+        rp_service = service_manager.reward_punishment_service
+        stats = rp_service.get_overall_stats()
+        
+        return render_template('statistics.html', stats=stats)
+
     # === 家长信息管理路由 ===
     @app.route('/parents')
     @teacher_or_admin_required
@@ -1304,8 +1332,8 @@ def setup_routes(app, service_manager):
                             present_count=stats_data.get('present_count', 0),
                             absent_count=stats_data.get('absent_count', 0),
                             leave_count=stats_data.get('leave_count', 0),
-                            rewards=stats_data.get('rewards', []),
-                            punishments=stats_data.get('punishments', []),
+                            rewards_count=stats_data.get('rewards_count', 0),
+                            punishments_count=stats_data.get('punishments_count', 0),
                             schedule_distribution=schedule_distribution,
                             study_recommendations=study_recommendations,
                             chart_data=chart_data)

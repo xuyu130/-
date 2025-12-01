@@ -308,8 +308,9 @@ class AttendanceRepository(BaseRepository[Attendance]):
             if item.get('student_id') != student_id
         ]
 
+# ... existing code ...
 class RewardPunishmentRepository(BaseRepository[RewardPunishment]):
-    """奖励处分仓储类"""
+    """奖励处分仓储类"""    
     
     def _dict_to_model(self, item_dict: Dict[str, Any]) -> RewardPunishment:
         return RewardPunishment(**item_dict)
@@ -321,6 +322,11 @@ class RewardPunishmentRepository(BaseRepository[RewardPunishment]):
     def get_by_type(self, rp_type: str) -> List[RewardPunishment]:
         """根据类型获取奖励处分记录"""
         return self.find(type=rp_type)
+    
+    def get_by_student_id_and_type(self, student_id: int, rp_type: str) -> List[RewardPunishment]:
+        """根据学生ID和类型获取奖励处分记录"""
+        return self.find(student_id=student_id, type=rp_type)
+    
     
     def get_rewards(self) -> List[RewardPunishment]:
         """获取所有奖励记录"""
@@ -348,6 +354,8 @@ class RewardPunishmentRepository(BaseRepository[RewardPunishment]):
             item for item in self.data['in_memory_data'][self.table_name] 
             if item.get('student_id') != student_id
         ]
+
+# ... existing code ...
 
 class ParentRepository(BaseRepository[Parent]):
     """家长信息仓储类"""
@@ -446,6 +454,7 @@ class ScheduleRepository(BaseRepository[Schedule]):
             if item.get('course_id') != course_id
         ]
 
+# ... existing code ...
 class RepositoryManager:
     """仓储管理器，统一管理所有仓储实例"""
     
@@ -469,6 +478,15 @@ class RepositoryManager:
         self.notice_repo = NoticeRepository()
         self.schedule_repo = ScheduleRepository()
     
+    def save_all(self):
+        """保存所有仓储数据"""
+        # 获取所有仓储属性
+        repos = [getattr(self, attr) for attr in dir(self) if attr.endswith('_repo')]
+        
+        # 保存每个仓储的数据
+        for repo in repos:
+            if hasattr(repo, 'save_data'):
+                repo.save_data()
     
     def init_default_data(self):
         """初始化默认数据"""
@@ -489,6 +507,7 @@ class RepositoryManager:
             print("Default data initialized successfully.")
         else:
             print("Existing data found. Skipping default data initialization.")
+
 
 # 全局仓储管理器实例
 repo_manager = RepositoryManager()

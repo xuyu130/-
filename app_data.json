@@ -241,6 +241,20 @@
                 "course_id": 1,
                 "exam_score": null,
                 "performance_score": null
+            },
+            {
+                "id": 31,
+                "student_id": 3,
+                "course_id": 4,
+                "exam_score": null,
+                "performance_score": null
+            },
+            {
+                "id": 33,
+                "student_id": 3,
+                "course_id": 5,
+                "exam_score": null,
+                "performance_score": null
             }
         ],
         "attendance": [
@@ -299,71 +313,6 @@
                 "date": "2025-11-27",
                 "status": "present",
                 "reason": "学生自主签到"
-            }
-        ],
-        "rewards_punishments": [
-            {
-                "id": 1,
-                "student_id": 3,
-                "type": "reward",
-                "description": "11",
-                "date": "2025-11-11"
-            },
-            {
-                "id": 2,
-                "student_id": 2,
-                "type": "punishment",
-                "description": "222",
-                "date": "2025-11-11"
-            },
-            {
-                "id": 4,
-                "student_id": 4,
-                "type": "punishment",
-                "description": "111",
-                "date": "2025-11-11"
-            },
-            {
-                "id": 5,
-                "student_id": 2,
-                "type": "reward",
-                "description": "1",
-                "date": "2025-11-11"
-            },
-            {
-                "id": 6,
-                "student_id": 4,
-                "type": "reward",
-                "description": "2",
-                "date": "111111-11-11"
-            },
-            {
-                "id": 7,
-                "student_id": 1,
-                "type": "reward",
-                "description": "s",
-                "date": "2025-11-11"
-            },
-            {
-                "id": 8,
-                "student_id": 3,
-                "type": "punishment",
-                "description": "1",
-                "date": "2025-11-12"
-            },
-            {
-                "id": 9,
-                "student_id": 4,
-                "type": "reward",
-                "description": "11",
-                "date": "2025-11-12"
-            },
-            {
-                "id": 10,
-                "student_id": 3,
-                "type": "reward",
-                "description": "1",
-                "date": "2025-11-12"
             }
         ],
         "parents": [
@@ -510,6 +459,57 @@
                 "date": "2025-11-30",
                 "status": "present",
                 "reason": "学生自主签到"
+            },
+            {
+                "id": 2,
+                "student_id": 3,
+                "date": "2025-12-01",
+                "status": "present",
+                "reason": "学生自主签到"
+            }
+        ],
+        "rewardpunishments": [
+            {
+                "id": 1,
+                "student_id": 3,
+                "type": "reward",
+                "description": "11",
+                "date": "2025-12-01"
+            },
+            {
+                "id": 2,
+                "student_id": 3,
+                "type": "punishment",
+                "description": "1",
+                "date": "2025-12-01"
+            },
+            {
+                "id": 3,
+                "student_id": 6,
+                "type": "punishment",
+                "description": "奖惩",
+                "date": "2025-12-01"
+            },
+            {
+                "id": 4,
+                "student_id": 3,
+                "type": "reward",
+                "description": "1",
+                "date": "2025-12-01"
+            },
+            {
+                "id": 5,
+                "student_id": 9,
+                "type": "reward",
+                "description": "321",
+                "date": "2025-12-01"
+            },
+            {
+                "id": 6,
+                "student_id": 3,
+                "type": "reward",
+                "description": "1",
+                "date": "2025-12-01"
             }
         ]
     },
@@ -517,12 +517,12 @@
         "users": 6,
         "students": 10,
         "courses": 6,
-        "enrollments": 31,
+        "enrollments": 34,
         "attendance": 13,
-        "rewards_punishments": 11,
         "parents": 3,
         "notices": 12,
         "schedules": 5,
-        "attendances": 2
+        "attendances": 3,
+        "rewardpunishments": 7
     }
 }

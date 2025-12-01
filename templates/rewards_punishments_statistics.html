@@ -1,0 +1,66 @@
+{% extends 'layout.html' %}
+
+{% block title %}奖惩统计{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">奖惩统计</h1>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-header">总奖励数</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ stats.rewards }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-danger mb-3">
+            <div class="card-header">总处分数</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ stats.punishments }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-info mb-3">
+            <div class="card-header">总计</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ stats.total }}</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="mt-4">月度统计</h4>
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>月份</th>
+                <th>奖励数</th>
+                <th>处分数</th>
+                <th>总计</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for month, data in stats.by_month|dictsort(reverse=true) %}
+            <tr>
+                <td>{{ month }}</td>
+                <td>{{ data.rewards }}</td>
+                <td>{{ data.punishments }}</td>
+                <td>{{ data.rewards + data.punishments }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" class="text-center text-muted">暂无统计数据</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<a href="{{ url_for('rewards_punishments') }}" class="btn btn-primary mt-3">
+    <i class="bi bi-arrow-left"></i> 返回奖惩管理
+</a>
+{% endblock %}

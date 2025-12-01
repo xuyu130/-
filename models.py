@@ -226,9 +226,10 @@ class DataInitializer:
             )
         ]
         
+        
         # 其他空表
         attendance = []
-        rewards_punishments = []
+        rewardpunishments= []
         parents = []
         notices = []
         
@@ -238,11 +239,12 @@ class DataInitializer:
             'courses': courses,
             'enrollments': enrollments,
             'attendance': attendance,
-            'rewards_punishments': rewards_punishments,
+            'rewardpunishments': rewardpunishments,
             'parents': parents,
             'notices': notices,
             'schedules': schedules
         }
+    
 
 # 数据转换工具类
 class DataConverter:

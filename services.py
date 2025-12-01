@@ -565,6 +565,12 @@ class EnrollmentService(BaseService):
         except Exception as e:
             return False, None, f'更新成绩时发生错误: {str(e)}'
     
+
+    def get_courses_for_student(self, student_id: int) -> List[int]:
+        """获取学生选修的所有课程ID"""
+        enrollments = self.enrollment_repo.get_by_student_id(student_id)
+        return [enrollment.course_id for enrollment in enrollments]
+# ... existing code ...
     def get_student_enrollments(self, student_id: int) -> List[Enrollment]:
         """获取学生的选课记录"""
         return self.enrollment_repo.get_by_student_id(student_id)
@@ -795,6 +801,46 @@ class RewardPunishmentService(BaseService):
     def get_student_stats(self, student_id: int) -> Dict[str, int]:
         """获取学生的奖励处分统计"""
         return self.reward_punishment_repo.get_stats_by_student(student_id)
+    
+    def get_overall_stats(self) -> Dict[str, Any]:
+        """获取全校奖惩统计"""
+        all_records = self.reward_punishment_repo.get_all()
+        stats = {
+            'total': len(all_records),
+            'rewards': 0,
+            'punishments': 0,
+            'by_month': {}
+        }
+        
+        for record in all_records:
+            if record.type == 'reward':
+                stats['rewards'] += 1
+            elif record.type == 'punishment':
+                stats['punishments'] += 1
+                
+            # 按月份统计
+            year_month = record.date[:7]  # YYYY-MM
+            if year_month not in stats['by_month']:
+                stats['by_month'][year_month] = {'rewards': 0, 'punishments': 0}
+            
+            if record.type == 'reward':
+                stats['by_month'][year_month]['rewards'] += 1
+            else:
+                stats['by_month'][year_month]['punishments'] += 1
+                
+        return stats
+    
+    def get_records_by_date_range(self, start_date: str, end_date: str) -> List[RewardPunishment]:
+        """获取指定日期范围内的奖惩记录"""
+        all_records = self.reward_punishment_repo.get_all()
+        filtered_records = []
+        
+        for record in all_records:
+            if start_date <= record.date <= end_date:
+                filtered_records.append(record)
+                
+        return filtered_records
+# ... existing code ...
 
 class ParentService(BaseService):
     """家长信息服务类"""
@@ -1194,6 +1240,14 @@ class StatisticsService(BaseService):
             gender = student.gender
             students_by_gender[gender] = students_by_gender.get(gender, 0) + 1
         
+        # 将字典转换为列表格式以便模板使用
+        students_by_gender_list = []
+        for gender, count in students_by_gender.items():
+            students_by_gender_list.append({
+                'gender': gender,
+                'count': count
+            })
+        
         # 考勤概览 (过去7天)
         today = datetime.date.today()
         attendance_summary = []
@@ -1201,6 +1255,7 @@ class StatisticsService(BaseService):
             date = (today - datetime.timedelta(days=i)).strftime('%Y-%m-%d')
             day_attendance = self.attendance_repo.get_by_date(date)
             
+            # 统计当天出勤情况
             present_count = sum(1 for a in day_attendance if a.status == 'present')
             absent_count = sum(1 for a in day_attendance if a.status == 'absent')
             leave_count = sum(1 for a in day_attendance if a.status == 'leave')
@@ -1216,7 +1271,10 @@ class StatisticsService(BaseService):
         course_scores = {}
         for enrollment in self.enrollment_repo.get_all():
             if enrollment.course_id not in course_scores:
-                course_scores[enrollment.course_id] = {'exam_scores': [], 'performance_scores': []}
+                course_scores[enrollment.course_id] = {
+                    'exam_scores': [], 
+                    'performance_scores': []
+                }
             
             if enrollment.exam_score is not None:
                 course_scores[enrollment.course_id]['exam_scores'].append(enrollment.exam_score)
@@ -1228,7 +1286,11 @@ class StatisticsService(BaseService):
             course = self.course_repo.get_by_id(course_id)
             if course and scores_data['exam_scores']:
                 avg_exam = sum(scores_data['exam_scores']) / len(scores_data['exam_scores'])
-                avg_performance = sum(scores_data['performance_scores']) / len(scores_data['performance_scores']) if scores_data['performance_scores'] else None
+                avg_performance = (
+                    sum(scores_data['performance_scores']) / len(scores_data['performance_scores']) 
+                    if scores_data['performance_scores'] 
+                    else None
+                )
                 
                 avg_scores.append({
                     'course_name': course.name,
@@ -1242,13 +1304,21 @@ class StatisticsService(BaseService):
             rp_type = record.type
             rp_summary[rp_type] = rp_summary.get(rp_type, 0) + 1
         
+        # 将字典转换为列表格式以便模板使用
+        rp_summary_list = []
+        for rp_type, count in rp_summary.items():
+            rp_summary_list.append({
+                'type': rp_type,
+                'count': count
+            })
+
         return {
             'total_students': total_students,
-            'students_by_gender': students_by_gender,
+            'students_by_gender': students_by_gender_list,
             'total_courses': total_courses,
             'attendance_summary': attendance_summary,
             'avg_scores': avg_scores,
-            'rp_summary': rp_summary
+            'rp_summary': rp_summary_list
         }
     
     def get_student_statistics(self, student_id: int) -> Dict[str, Any]:
