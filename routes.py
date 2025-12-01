@@ -1,7 +1,9 @@
 # routes.py
 import datetime
 import copy
-from flask import render_template, request, redirect, url_for, session, flash, g, jsonify
+import csv
+import io
+from flask import render_template, request, redirect, url_for, session, flash, g, jsonify, make_response
 from functools import wraps
 
 from models import Validator, BusinessException
@@ -1313,6 +1315,78 @@ def setup_routes(app, service_manager):
                             rp_summary=stats_data['rp_summary'],
                             class_filter=class_filter,
                             unique_classes=unique_classes)
+    
+    # 添加Excel导出功能
+    @app.route('/export_statistics_excel')
+    @login_required
+    def export_statistics_excel():
+        statistics_service = service_manager.statistics_service
+        # 获取班级筛选参数
+        class_filter = request.args.get('class', '')
+        
+        stats_data = statistics_service.get_general_statistics(class_filter)
+        
+        # 创建内存中的CSV文件
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # 写入标题行
+        writer.writerow(['统计分析报告'])
+        writer.writerow([])
+        
+        # 写入基本信息
+        writer.writerow(['基本信息'])
+        writer.writerow(['学生总数', stats_data['total_students']])
+        writer.writerow(['课程总数', stats_data['total_courses']])
+        writer.writerow([])
+        
+        # 写入学生性别分布
+        writer.writerow(['学生性别分布'])
+        writer.writerow(['性别', '人数'])
+        for item in stats_data['students_by_gender']:
+            gender_text = item['gender']
+            if gender_text == 'male':
+                gender_text = '男'
+            elif gender_text == 'female':
+                gender_text = '女'
+            writer.writerow([gender_text, item['count']])
+        writer.writerow([])
+        
+        # 写入近7天考勤概览
+        writer.writerow(['近7天考勤概览'])
+        writer.writerow(['日期', '出勤', '缺勤', '请假'])
+        for rec in stats_data['attendance_summary']:
+            writer.writerow([rec['date'], rec['present_count'], rec['absent_count'], rec['leave_count']])
+        writer.writerow([])
+        
+        # 写入课程成绩概览
+        writer.writerow(['课程成绩概览'])
+        writer.writerow(['课程名称', '考试平均分', '表现平均分'])
+        for score in stats_data['avg_scores']:
+            writer.writerow([
+                score['course_name'], 
+                score['avg_exam_score'], 
+                score['avg_performance_score'] if score['avg_performance_score'] != 'N/A' else ''
+            ])
+        writer.writerow([])
+        
+        # 写入奖励与处分统计
+        writer.writerow(['奖励与处分统计'])
+        writer.writerow(['类型', '数量'])
+        for item in stats_data['rp_summary']:
+            type_text = item['type']
+            if type_text == 'reward':
+                type_text = '奖励'
+            elif type_text == 'punishment':
+                type_text = '处分'
+            writer.writerow([type_text, item['count']])
+        
+        # 准备响应
+        output.seek(0)
+        response = make_response(output.getvalue())
+        response.headers['Content-Disposition'] = f'attachment; filename=statistics_export_{datetime.date.today().strftime("%Y%m%d")}.csv'
+        response.headers['Content-type'] = 'text/csv'
+        return response
 
     @app.route('/stu_statistics')
     @student_required
@@ -1655,7 +1729,6 @@ def setup_routes(app, service_manager):
         
         return redirect(request.referrer or url_for('parents'))
 
-# ... existing code ...
     # === 错误处理路由 ===
     @app.errorhandler(404)
     def not_found(error):

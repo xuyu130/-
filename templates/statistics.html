@@ -31,6 +31,14 @@
                         </a>
                     </div>
                 </div>
+                <!-- 添加导出按钮 -->
+                <div class="col-md-2 d-flex align-items-end">
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('export_statistics_excel') }}?class={{ class_filter }}" class="btn btn-success">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> 导出Excel
+                        </a>
+                    </div>
+                </div>
             </form>
         </div>
     </div>
