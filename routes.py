@@ -99,8 +99,10 @@ def setup_routes(app, service_manager):
         absent_count = sum(1 for a in today_attendance if a.status == 'absent')
         leave_count = sum(1 for a in today_attendance if a.status == 'leave')
 
-        # 获取最近通知
-        recent_notices = notice_service.get_recent_notices(5)
+        # 获取最近通知（根据用户角色筛选）
+        recent_notices = notice_service.get_notices_for_user(session.get('role'))
+        # 只取最近的5条
+        recent_notices = sorted(recent_notices, key=lambda x: x.date, reverse=True)[:5]
         
         return render_template('index.html', 
                             student_count=student_count, 
@@ -504,6 +506,7 @@ def setup_routes(app, service_manager):
         attendance_service = service_manager.attendance_service
         student_service = service_manager.student_service
         
+        # 获取所有考勤记录并关联学生信息
         attendance_records = []
         for attendance in attendance_service.attendance_repo.get_all():
             student = student_service.get_student_by_id(attendance.student_id)
@@ -513,14 +516,30 @@ def setup_routes(app, service_manager):
                 record_data['student_id_str'] = student.student_id
                 attendance_records.append(record_data)
         
+        # 按日期和姓名排序（最新在前）
         attendance_records = sorted(attendance_records, key=lambda x: (x['date'], x['student_name']), reverse=True)
+        
+        # 获取查询参数进行筛选
+        start_date = request.args.get('start_date', '')
+        end_date = request.args.get('end_date', '')
+        
+        # 根据日期范围筛选
+        filtered_records = attendance_records
+        if start_date and end_date:
+            filtered_records = [r for r in attendance_records if start_date <= r['date'] <= end_date]
+        elif start_date:
+            filtered_records = [r for r in attendance_records if start_date <= r['date']]
+        elif end_date:
+            filtered_records = [r for r in attendance_records if r['date'] <= end_date]
         
         # 获取学生列表用于添加模态框
         students = sorted(student_service.get_all_students(), key=lambda x: x.name)
         
         return render_template('attendance.html', 
-                            attendance_records=attendance_records, 
-                            students=[s.to_dict() for s in students])
+                            attendance_records=filtered_records, 
+                            students=[s.to_dict() for s in students],
+                            start_date=start_date,
+                            end_date=end_date)
 
     @app.route('/attendance/add', methods=['POST'])
     @teacher_or_admin_required
@@ -759,14 +778,37 @@ def setup_routes(app, service_manager):
         parent_service = service_manager.parent_service
         student_service = service_manager.student_service
         
-        parents_list = []
-        for parent in parent_service.parent_repo.get_all():
+        # 获取搜索参数
+        search_name = request.args.get('name', '').strip()
+        search_student_id = request.args.get('student_id', '').strip()
+        
+        # 获取所有家长信息
+        all_parents = parent_service.parent_repo.get_all()
+        
+        # 根据搜索条件过滤家长信息
+        filtered_parents = []
+        for parent in all_parents:
             student = student_service.get_student_by_id(parent.student_id)
-            if student:
-                parent_data = parent.to_dict()
-                parent_data['student_name'] = student.name
-                parent_data['student_id_str'] = student.student_id
-                parents_list.append(parent_data)
+            if not student:
+                continue
+                
+            # 根据学生姓名搜索
+            if search_name and search_name.lower() not in student.name.lower():
+                continue
+                
+            # 根据学号搜索
+            if search_student_id and search_student_id.lower() not in student.student_id.lower():
+                continue
+                
+            filtered_parents.append((parent, student))
+        
+        # 构建返回给模板的数据
+        parents_list = []
+        for parent, student in filtered_parents:
+            parent_data = parent.to_dict()
+            parent_data['student_name'] = student.name
+            parent_data['student_id_str'] = student.student_id
+            parents_list.append(parent_data)
         
         parents_list = sorted(parents_list, key=lambda x: (x['student_name'], x['relationship']))
         

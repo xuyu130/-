@@ -1,7 +1,6 @@
 {% extends 'layout.html' %}
 
-{% block title %}仪表盘仪表盘
-{% endblock %}
+{% block title %}仪表盘 - 学生管理系统{% endblock %}
 
 {% block content %}
 <h1 class="mb-4">仪表盘</h1>
@@ -61,80 +60,106 @@
         </div>
     </div>
 </div>
-
 <div class="row mt-4">
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header">
-                最新通知
-            </div>
+            <div class="card-header"><i class="bi bi-bell"></i> 最新通知</div>
             <ul class="list-group list-group-flush">
                 {% if recent_notices %}
                     {% for notice in recent_notices %}
                         <li class="list-group-item">
                             <h6 class="mb-1">
                                 {% if session.get('role') in ['admin', 'teacher'] %}
-                                    <a href="{{ url_for('edit_notice', id=notice.id) }}">{{ notice.title }}</a>
+                                    <i class="bi bi-pencil-square"></i> <a href="#" data-bs-toggle="modal" data-bs-target="#noticeModal{{ notice.id }}">{{ notice.title }}</a>
                                 {% else %}
-                                    {{ notice.title }}
+                                    <i class="bi bi-envelope"></i> <a href="#" data-bs-toggle="modal" data-bs-target="#noticeModal{{ notice.id }}">{{ notice.title }}</a>
                                 {% endif %}
                             </h6>
-                            <small class="text-muted">{{ notice.date }} - {{ notice.sender }}</small><br>
+                            <small class="text-muted"><i class="bi bi-calendar"></i> {{ notice.date }} - <i class="bi bi-person"></i> {{ notice.sender }}</small><br>
                             <small>{{ notice.content[:50] }}...</small>
                         </li>
+                        
+                        <!-- 通知详情模态框 -->
+                        <div class="modal fade" id="noticeModal{{ notice.id }}" tabindex="-1" aria-labelledby="noticeModalLabel{{ notice.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="noticeModalLabel{{ notice.id }}"><i class="bi bi-envelope"></i> {{ notice.title }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p><strong><i class="bi bi-person"></i> 发布者：</strong>{{ notice.sender }}</p>
+                                        <p><strong><i class="bi bi-calendar"></i> 发布时间：</strong>{{ notice.date }}</p>
+                                        <p><strong><i class="bi bi-chat-text"></i> 通知内容：</strong></p>
+                                        <p>{{ notice.content|replace('\n', '<br>')|safe }}</p>
+                                        <hr>
+                                        <p><strong><i class="bi bi-people"></i> 目标受众：</strong>
+                                            {% if notice.target == 'students' %}
+                                                学生
+                                            {% elif notice.target == 'teachers' %}
+                                                教师
+                                            {% else %}
+                                                {{ notice.target }}
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> 关闭</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     {% endfor %}
                 {% else %}
-                    <li class="list-group-item text-muted">暂无最新通知。</li>
+                    <li class="list-group-item text-muted"><i class="bi bi-info-circle"></i> 暂无最新通知。</li>
                 {% endif %}
             </ul>
             <div class="card-footer text-end">
-                <a href="{{ url_for('notices') }}" class="btn btn-outline-primary btn-sm">查看所有通知</a>
+                <a href="{{ url_for('notices') }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-list"></i> 查看所有通知</a>
             </div>
         </div>
     </div>
+    
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header">
-                快速链接
-            </div>
+            <div class="card-header"><i class="bi bi-link-45deg"></i> 快速链接</div>
             <div class="card-body">
                 <div class="row">
-                    <!-- 管理操作链接组 -->
                     {% if session.get('role') in ['admin', 'teacher'] %}
                     <div class="col-md-6 mb-3">
-                        <h6 class="text-muted mb-2">管理操作</h6>
+                        <h6 class="text-muted mb-2"><i class="bi bi-gear"></i> 管理操作</h6>
                         <div class="list-group">
                             <button type="button" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#addStudentModal">
-                                <i class="bi bi-person-plus"></i> 添加新学生
+                                <i class="bi bi-person-plus-fill"></i> 添加新学生
                             </button>
                             <button type="button" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#addCourseModal">
-                                <i class="bi bi-book-plus"></i> 添加新课程
+                                <i class="bi bi-journal-plus"></i> 添加新课程
                             </button>
                             <button type="button" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#addAttendanceModal">
-                                <i class="bi bi-check2-square"></i> 记录考勤
+                                <i class="bi bi-calendar-check"></i> 记录考勤
                             </button>
                             <button type="button" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#addNoticeModal">
-                                <i class="bi bi-bullhorn"></i> 发布新通知
+                                <i class="bi bi-megaphone"></i> 发布新通知
                             </button>
                         </div>
                     </div>
                     {% endif %}
                     
-                    <!-- 通用链接组 -->
                     <div class="{% if session.get('role') in ['admin', 'teacher'] %}col-md-6{% else %}col-md-12{% endif %} mb-3">
                         <h6 class="text-muted mb-2">
-                            {% if session.get('role') == 'student' %}学生服务{% else %}系统功能{% endif %}
+                            <i class="bi bi-collection"></i> {% if session.get('role') == 'student' %}学生服务{% else %}系统功能{% endif %}
                         </h6>
                         <div class="list-group">
                             {% if session.get('role') == 'student' %}
                             <a href="{{ url_for('view_grades') }}" class="list-group-item list-group-item-action">
-                                <i class="bi bi-clipboard-data"></i> 成绩查询
+                                <i class="bi bi-file-earmark-bar-graph"></i> 成绩查询
                             </a>
                             <a href="{{ url_for('student_courses') }}" class="list-group-item list-group-item-action">
-                                <i class="bi bi-book-open"></i> 我的课程
+                                <i class="bi bi-backpack"></i> 我的课程
                             </a>
                             {% endif %}
-                            <a href="{{ url_for('statistics') }}" class="list-group-item list-group-item-action">
+                            <a href="{% if session.get('role') == 'student' %}{{ url_for('stu_statistics') }}{% else %}{{ url_for('statistics') }}{% endif %}" 
+                               class="list-group-item list-group-item-action">
                                 <i class="bi bi-bar-chart"></i> 统计分析
                             </a>
                             <a href="{{ url_for('notices') }}" class="list-group-item list-group-item-action">
@@ -153,8 +178,9 @@
     </div>
 </div>
 
-<!-- 添加学生模态框 -->
+<!-- 模态框部分 -->
 {% if session.get('role') in ['admin', 'teacher'] %}
+<!-- 添加学生模态框 -->
 <div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -240,10 +266,8 @@
         </div>
     </div>
 </div>
-{% endif %}
 
 <!-- 添加课程模态框 -->
-{% if session.get('role') in ['admin', 'teacher'] %}
 <div class="modal fade" id="addCourseModal" tabindex="-1" aria-labelledby="addCourseModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -291,10 +315,8 @@
         </div>
     </div>
 </div>
-{% endif %}
 
 <!-- 添加考勤模态框 -->
-{% if session.get('role') in ['admin', 'teacher'] %}
 <div class="modal fade" id="addAttendanceModal" tabindex="-1" aria-labelledby="addAttendanceModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -346,10 +368,8 @@
         </div>
     </div>
 </div>
-{% endif %}
 
 <!-- 添加通知模态框 -->
-{% if session.get('role') in ['admin', 'teacher'] %}
 <div class="modal fade" id="addNoticeModal" tabindex="-1" aria-labelledby="addNoticeModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -395,16 +415,6 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 删除确认
-    const deleteForms = document.querySelectorAll('.delete-form');
-    deleteForms.forEach(form => {
-        form.addEventListener('submit', function(event) {
-            if (!confirm('确定要执行此删除操作吗？此操作可能不可恢复！')) {
-                event.preventDefault();
-            }
-        });
-    });
-    
     // 表单验证
     const forms = document.querySelectorAll('form[method="POST"]');
     forms.forEach(form => {
@@ -427,6 +437,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // 设置考勤日期默认为今天
+    const today = new Date().toISOString().split('T')[0];
+    const dateField = document.getElementById('date');
+    if (dateField) {
+        dateField.value = today;
+    }
 });
 </script>
 {% endblock %}

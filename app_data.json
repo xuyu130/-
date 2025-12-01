@@ -10,31 +10,52 @@
             },
             {
                 "id": 2,
-                "username": "t1",
-                "password": "scrypt:32768:8:1$iCkGyU8DrdP09f5J$94bf9f0f40a62a9091b6642aa85ef5fff314abf1b542daae92406a205e660627af66fed474c62a7d3d6e6d1e075e0baa7435615559cd29f9e1a6bce066b0a597",
+                "username": "teacher_li",
+                "password": "scrypt:32768:8:1$x3abBYA4jEhtnriH$d1db6997c6e380d0b0701cb672bb0fcfcb67043563d23ff1fa74779a3d1d71544e00b678a7734a74ac2601e2cf1d390fafe50ba1ec16266d4ba5b54cc84e40b8",
                 "role": "teacher",
                 "student_info_id": null
             },
             {
                 "id": 3,
-                "username": "111",
-                "password": "scrypt:32768:8:1$IOXWpeYfRxZGsdtt$9d0701ba5d3d3c5c0fe924e5ec65fef6542c18d4cf45c95ef240df8e968eefcd5b349176b39f90552760824f5e9b2eb1a5d380658191930ba17b0f40d63214b8",
+                "username": "zhangsan",
+                "password": "scrypt:32768:8:1$gmmIutu8iT4sXgxT$7f5b984a7ed69c14cd232bdfdb954a049897e0e8c495b57c815928942bbea615100280cb5ce742f95553fe9b0cfd02803b69340334650b67601e8e394e8dd0d4",
                 "role": "student",
                 "student_info_id": 1
             },
             {
                 "id": 4,
-                "username": "222",
-                "password": "scrypt:32768:8:1$BeZti31LNH1HAd3j$d2cd6efe10e9902a151585d87871294d5a791f8656676ed15923afd0a37149197fad62440841de5807c5bd70cb4b7eef461caceefec6e73f5d1f269190aa7e41",
+                "username": "lisi",
+                "password": "scrypt:32768:8:1$FmjTPV9R4dBCxSRt$1426531f6e1cd8db63abcded97748e643a1dd92bb3437fcf19353cbadeccc53739a2bcbff9ba93df48a3fa3f19c266ef423bcdf0d97aca636fd4176c33d12441",
                 "role": "student",
                 "student_info_id": 2
             },
             {
                 "id": 5,
-                "username": "1111",
-                "password": "scrypt:32768:8:1$ipznGn1U0NmP3zDM$704857437eaa21c62589438b8f30b1dcc66c4d8bad9a0f821d7f3f839406a6fc0b48f4f0f814248f9e26db8523af22bfc0e87a53dc605eed7c1ea3ed67312ea6",
+                "username": "wangwu",
+                "password": "scrypt:32768:8:1$tZ97h1mlCX2yV8Ky$996f4051c0175a8228625f161aacf6eafbe1508cea151bf8acd3229aa3bfe2bb9a89e535f7d82da600e26559158685791a45e32ab285534635eb1b7788475f30",
                 "role": "student",
                 "student_info_id": 3
+            },
+            {
+                "id": 6,
+                "username": "admin2",
+                "password": "scrypt:32768:8:1$GfKOP6ecRpxbmhM0$8bb4c5f9f1663a00b86581ae80b900753769a03675aa35f8a0200bf7662c52622a7c52371619c72789486ea9917f750b8a34e24036d2965e19dba57d496cde8c",
+                "role": "admin",
+                "student_info_id": null
+            },
+            {
+                "id": 7,
+                "username": "teacher_wang",
+                "password": "scrypt:32768:8:1$x3abBYA4jEhtnriH$d1db6997c6e380d0b0701cb672bb0fcfcb67043563d23ff1fa74779a3d1d71544e00b678a7734a74ac2601e2cf1d390fafe50ba1ec16266d4ba5b54cc84e40b8",
+                "role": "teacher",
+                "student_info_id": null
+            },
+            {
+                "id": 8,
+                "username": "xiaoming",
+                "password": "scrypt:32768:8:1$gmmIutu8iT4sXgxT$7f5b984a7ed69c14cd232bdfdb954a049897e0e8c495b57c815928942bbea615100280cb5ce742f95553fe9b0cfd02803b69340334650b67601e8e394e8dd0d4",
+                "role": "student",
+                "student_info_id": 4
             }
         ],
         "students": [
@@ -42,381 +63,314 @@
                 "id": 1,
                 "name": "张三",
                 "gender": "男",
-                "age": 15,
-                "student_id": "S001",
+                "age": 16,
+                "student_id": "S2023001",
                 "contact_phone": "13800001111",
                 "family_info": "父亲：张大山，母亲：李小花",
-                "class_name": "三年二班",
+                "class_name": "高一(1)班",
                 "homeroom_teacher": "李老师"
             },
             {
                 "id": 2,
-                "name": "222",
-                "gender": "男",
-                "age": 22,
-                "student_id": "22",
-                "contact_phone": "22",
-                "family_info": "",
-                "class_name": "",
-                "homeroom_teacher": ""
+                "name": "李四",
+                "gender": "女",
+                "age": 15,
+                "student_id": "S2023002",
+                "contact_phone": "13800002222",
+                "family_info": "父亲：李建国，母亲：王美丽",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
             },
             {
                 "id": 3,
-                "name": "1111",
+                "name": "王五",
                 "gender": "男",
-                "age": 11,
-                "student_id": "11111",
-                "contact_phone": "11111111111",
-                "family_info": "",
-                "class_name": "",
-                "homeroom_teacher": ""
+                "age": 17,
+                "student_id": "S2023003",
+                "contact_phone": "13800003333",
+                "family_info": "父亲：王大力，母亲：陈秀英",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
             },
             {
                 "id": 4,
-                "name": "11111",
+                "name": "小明",
                 "gender": "男",
-                "age": 11,
-                "student_id": "111111",
-                "contact_phone": "1",
-                "family_info": "1",
-                "class_name": "",
-                "homeroom_teacher": ""
-            },
-            {
-                "id": 5,
-                "name": "11233",
-                "gender": "女",
-                "age": 11,
-                "student_id": "1111133",
-                "contact_phone": "1",
-                "family_info": "",
-                "class_name": "",
-                "homeroom_teacher": ""
-            },
-            {
-                "id": 6,
-                "name": "1",
-                "gender": "女",
-                "age": 12,
-                "student_id": "1",
-                "contact_phone": "11111111111",
-                "family_info": "",
-                "class_name": "",
-                "homeroom_teacher": ""
-            },
-            {
-                "id": 8,
-                "name": "23233232",
-                "gender": "女",
-                "age": 22,
-                "student_id": "23",
-                "contact_phone": "32321321321",
-                "family_info": "",
-                "class_name": "",
-                "homeroom_teacher": ""
-            },
-            {
-                "id": 9,
-                "name": "3213212222",
-                "gender": "男",
-                "age": 22,
-                "student_id": "1233131",
-                "contact_phone": "21321321322",
-                "family_info": "",
-                "class_name": "",
-                "homeroom_teacher": ""
+                "age": 16,
+                "student_id": "S2023004",
+                "contact_phone": "13800004444",
+                "family_info": "父亲：王大山，母亲：李美丽",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
             }
         ],
         "courses": [
             {
                 "id": 1,
                 "name": "数学",
-                "description": "基础数学课程",
-                "credits": 3,
-                "capacity": 2
+                "description": "高中一年级数学基础课程",
+                "credits": 4,
+                "capacity": 40
             },
             {
                 "id": 2,
                 "name": "英语",
-                "description": "英语听说读写",
+                "description": "高中一年级英语课程，包括听说读写训练",
                 "credits": 4,
                 "capacity": 40
             },
             {
                 "id": 3,
-                "name": "历史",
-                "description": "中国历史",
-                "credits": 2,
-                "capacity": null
+                "name": "物理",
+                "description": "高中一年级物理基础课程",
+                "credits": 3,
+                "capacity": 40
             },
             {
                 "id": 4,
-                "name": "222",
-                "description": "1",
-                "credits": 1,
-                "capacity": 2
+                "name": "化学",
+                "description": "高中一年级化学基础课程",
+                "credits": 3,
+                "capacity": 40
             },
             {
                 "id": 5,
-                "name": "2222",
-                "description": "22",
-                "credits": 1,
-                "capacity": 1
+                "name": "语文",
+                "description": "高中一年级语文课程",
+                "credits": 4,
+                "capacity": 40
+            },
+            {
+                "id": 6,
+                "name": "生物",
+                "description": "高中一年级生物基础课程",
+                "credits": 3,
+                "capacity": 40
             }
         ],
         "enrollments": [
             {
-                "id": 3,
-                "student_id": 3,
+                "id": 1,
+                "student_id": 1,
                 "course_id": 1,
-                "exam_score": 11.0,
-                "performance_score": 11.0
+                "exam_score": 85.0,
+                "performance_score": 88.0
+            },
+            {
+                "id": 2,
+                "student_id": 1,
+                "course_id": 2,
+                "exam_score": 92.0,
+                "performance_score": 90.0
+            },
+            {
+                "id": 3,
+                "student_id": 1,
+                "course_id": 3,
+                "exam_score": 78.0,
+                "performance_score": 82.0
+            },
+            {
+                "id": 4,
+                "student_id": 2,
+                "course_id": 1,
+                "exam_score": 90.0,
+                "performance_score": 87.0
             },
             {
                 "id": 5,
-                "student_id": 4,
-                "course_id": 3,
-                "exam_score": 22.0,
-                "performance_score": 33.0
+                "student_id": 2,
+                "course_id": 2,
+                "exam_score": 88.0,
+                "performance_score": 91.0
             },
             {
                 "id": 6,
-                "student_id": 4,
-                "course_id": 2,
-                "exam_score": 31.0,
-                "performance_score": 42.0
-            },
-            {
-                "id": 14,
                 "student_id": 2,
-                "course_id": 3,
-                "exam_score": 1,
-                "performance_score": 1
+                "course_id": 5,
+                "exam_score": 95.0,
+                "performance_score": 93.0
             },
             {
-                "id": 22,
-                "student_id": 1,
-                "course_id": 3,
-                "exam_score": null,
-                "performance_score": null
-            },
-            {
-                "id": 24,
-                "student_id": 1,
-                "course_id": 2,
-                "exam_score": null,
-                "performance_score": null
-            },
-            {
-                "id": 25,
+                "id": 7,
                 "student_id": 3,
-                "course_id": 3,
-                "exam_score": 11.0,
-                "performance_score": 11.0
-            },
-            {
-                "id": 26,
-                "student_id": 3,
-                "course_id": 2,
-                "exam_score": null,
-                "performance_score": null
-            },
-            {
-                "id": 27,
-                "student_id": 6,
                 "course_id": 1,
-                "exam_score": 11.0,
-                "performance_score": 11.0
+                "exam_score": 76.0,
+                "performance_score": 80.0
             },
             {
-                "id": 29,
-                "student_id": 1,
-                "course_id": 4,
-                "exam_score": 2.0,
-                "performance_score": 2.0
-            },
-            {
-                "id": 30,
-                "student_id": 1,
-                "course_id": 1,
-                "exam_score": null,
-                "performance_score": null
-            },
-            {
-                "id": 31,
+                "id": 8,
                 "student_id": 3,
                 "course_id": 4,
-                "exam_score": null,
-                "performance_score": null
+                "exam_score": 82.0,
+                "performance_score": 79.0
             },
             {
-                "id": 33,
+                "id": 9,
                 "student_id": 3,
                 "course_id": 5,
-                "exam_score": null,
-                "performance_score": null
+                "exam_score": 85.0,
+                "performance_score": 87.0
+            },
+            {
+                "id": 10,
+                "student_id": 4,
+                "course_id": 6,
+                "exam_score": 85.0,
+                "performance_score": 90.0
             }
         ],
         "attendance": [
             {
+                "id": 1,
+                "student_id": 1,
+                "date": "2025-11-25",
+                "status": "present",
+                "reason": ""
+            },
+            {
                 "id": 2,
                 "student_id": 1,
-                "date": "2025-11-10",
+                "date": "2025-11-26",
+                "status": "present",
+                "reason": ""
+            },
+            {
+                "id": 3,
+                "student_id": 1,
+                "date": "2025-11-27",
                 "status": "absent",
+                "reason": "生病请假"
+            },
+            {
+                "id": 4,
+                "student_id": 2,
+                "date": "2025-11-25",
+                "status": "present",
                 "reason": ""
             },
             {
                 "id": 5,
-                "student_id": 1,
-                "date": "2025-11-11",
-                "status": "absent",
-                "reason": "学生自主签到"
+                "student_id": 2,
+                "date": "2025-11-26",
+                "status": "leave",
+                "reason": "家庭事务"
             },
             {
                 "id": 6,
-                "student_id": 3,
-                "date": "2025-11-11",
+                "student_id": 2,
+                "date": "2025-11-27",
                 "status": "present",
-                "reason": "1"
+                "reason": ""
             },
             {
                 "id": 7,
-                "student_id": 4,
-                "date": "2025-11-11",
+                "student_id": 3,
+                "date": "2025-11-25",
                 "status": "present",
-                "reason": null
+                "reason": ""
+            },
+            {
+                "id": 8,
+                "student_id": 3,
+                "date": "2025-11-26",
+                "status": "present",
+                "reason": ""
             },
             {
                 "id": 9,
-                "student_id": 2,
-                "date": "2025-11-11",
+                "student_id": 3,
+                "date": "2025-11-27",
                 "status": "present",
-                "reason": "学生自主签到"
+                "reason": ""
             },
             {
                 "id": 10,
-                "student_id": 3,
-                "date": "2025-11-12",
+                "student_id": 4,
+                "date": "2025-12-01",
                 "status": "present",
-                "reason": null
-            },
-            {
-                "id": 11,
-                "student_id": 1,
-                "date": "2025-11-12",
-                "status": "present",
-                "reason": "学生自主签到"
-            },
-            {
-                "id": 12,
-                "student_id": 1,
-                "date": "2025-11-27",
-                "status": "present",
-                "reason": "学生自主签到"
+                "reason": ""
             }
         ],
         "parents": [
             {
                 "id": 1,
-                "student_id": 3,
-                "name": "111",
+                "student_id": 1,
+                "parent_name": "张大山",
                 "relationship": "父亲",
-                "contact_phone": "22111111111",
-                "email": "3@qq.com",
-                "parent_name": "11",
-                "address": ""
+                "contact_phone": "13800001111",
+                "email": "zhangdashan@example.com",
+                "address": "北京市朝阳区某某街道101号"
+            },
+            {
+                "id": 2,
+                "student_id": 1,
+                "parent_name": "李小花",
+                "relationship": "母亲",
+                "contact_phone": "13800001112",
+                "email": "lixiaohua@example.com",
+                "address": "北京市朝阳区某某街道101号"
             },
             {
                 "id": 3,
                 "student_id": 2,
-                "parent_name": "231321",
-                "relationship": "母亲",
-                "contact_phone": "11111121121",
-                "email": "3@qq.com",
-                "address": "1"
+                "parent_name": "李建国",
+                "relationship": "父亲",
+                "contact_phone": "13800002222",
+                "email": "lijianguo@example.com",
+                "address": "北京市海淀区某某街道202号"
             },
             {
                 "id": 4,
-                "student_id": 1,
-                "parent_name": "22",
+                "student_id": 3,
+                "parent_name": "王大力",
                 "relationship": "父亲",
-                "contact_phone": "22222222222",
-                "email": "3@qq.com",
-                "address": ""
+                "contact_phone": "13800003333",
+                "email": "wangdali@example.com",
+                "address": "北京市西城区某某街道303号"
+            },
+            {
+                "id": 5,
+                "student_id": 4,
+                "parent_name": "王大山",
+                "relationship": "父亲",
+                "contact_phone": "13800004444",
+                "email": "wangdashan@example.com",
+                "address": "北京市西城区某某街道404号"
             }
         ],
         "notices": [
             {
                 "id": 1,
-                "title": "通知",
-                "content": "嗯嗯",
-                "date": "2025-11-12 00:35:41",
+                "title": "期末考试安排通知",
+                "content": "各位同学请注意，本学期期末考试将于2025年12月20日至12月25日举行，请大家提前做好复习准备。",
+                "date": "2025-11-20 09:00:00",
                 "target": "",
-                "sender": "admin"
+                "sender": "教务处"
+            },
+            {
+                "id": 2,
+                "title": "冬季校园安全提醒",
+                "content": "随着天气转冷，请同学们注意保暖，同时注意校园内交通安全，避免滑倒摔伤。",
+                "date": "2025-11-22 14:30:00",
+                "target": "students",
+                "sender": "学生处"
+            },
+            {
+                "id": 3,
+                "title": "教师培训通知",
+                "content": "全体教师请注意，本周六上午9点将在报告厅举行教学方法培训，请准时参加。",
+                "target": "teachers",
+                "sender": "校长办公室",
+                "date": "2025-11-24 10:15:00"
             },
             {
                 "id": 4,
-                "title": "1",
-                "content": "1",
-                "target": "teachers",
-                "sender": "admin",
-                "date": "2025-11-12 01:15:42"
-            },
-            {
-                "id": 5,
-                "title": "1",
-                "content": "1",
+                "title": "元旦放假通知",
+                "content": "各位师生请注意，2026年元旦放假时间为1月1日至1月3日，请提前安排好相关工作。",
+                "date": "2025-11-28 16:00:00",
                 "target": "",
-                "sender": "admin",
-                "date": "2025-11-12 01:15:46"
-            },
-            {
-                "id": 6,
-                "title": "1",
-                "content": "1",
-                "target": "students",
-                "sender": "admin",
-                "date": "2025-11-12 01:15:55"
-            },
-            {
-                "id": 7,
-                "title": "1",
-                "content": "1",
-                "target": "",
-                "sender": "admin",
-                "date": "2025-11-12 01:19:02"
-            },
-            {
-                "id": 8,
-                "title": "1",
-                "content": "1",
-                "target": "",
-                "sender": "admin",
-                "date": "2025-11-12 01:21:46"
-            },
-            {
-                "id": 9,
-                "title": "1",
-                "content": "1",
-                "target": "",
-                "sender": "admin",
-                "date": "2025-11-12 01:21:49"
-            },
-            {
-                "id": 10,
-                "title": "1111",
-                "content": "1111",
-                "target": "students",
-                "sender": "admin",
-                "date": "2025-11-12 01:21:55"
-            },
-            {
-                "id": 11,
-                "title": "1",
-                "content": "1",
-                "target": "",
-                "sender": "admin",
-                "date": "2025-11-27 22:45:20"
+                "sender": "校长办公室"
             }
         ],
         "schedules": [
@@ -425,10 +379,10 @@
                 "course_id": 1,
                 "teacher_user_id": 2,
                 "day_of_week": "Monday",
-                "start_time": "09:00",
-                "end_time": "10:30",
-                "location": "Room 101",
-                "semester": "2023-2024 Fall"
+                "start_time": "08:00",
+                "end_time": "09:30",
+                "location": "教学楼A101",
+                "semester": "2025-2026秋季学期"
             },
             {
                 "id": 2,
@@ -437,101 +391,90 @@
                 "day_of_week": "Tuesday",
                 "start_time": "10:00",
                 "end_time": "11:30",
-                "location": "Room 203",
-                "semester": "2023-2024 Fall"
+                "location": "实验楼B301",
+                "semester": "2025-2026秋季学期"
             },
             {
+                "id": 3,
                 "course_id": 3,
                 "teacher_user_id": 2,
-                "day_of_week": "Monday",
-                "start_time": "21:10",
-                "end_time": "22:12",
-                "location": "11",
-                "semester": "2023-2024 Fall",
-                "id": 3
+                "day_of_week": "Wednesday",
+                "start_time": "14:00",
+                "end_time": "15:30",
+                "location": "实验楼B203",
+                "semester": "2025-2026秋季学期"
             },
             {
-                "course_id": 3,
+                "id": 4,
+                "course_id": 4,
                 "teacher_user_id": 2,
-                "day_of_week": "Monday",
-                "start_time": "01:34",
-                "end_time": "02:35",
-                "location": "11",
-                "semester": "未知学期",
-                "id": 4
-            }
-        ],
-        "attendances": [
-            {
-                "id": 1,
-                "student_id": 4,
-                "date": "2025-11-30",
-                "status": "present",
-                "reason": "学生自主签到"
+                "day_of_week": "Thursday",
+                "start_time": "08:00",
+                "end_time": "09:30",
+                "location": "实验楼B205",
+                "semester": "2025-2026秋季学期"
             },
             {
-                "id": 2,
-                "student_id": 3,
-                "date": "2025-12-01",
-                "status": "present",
-                "reason": "学生自主签到"
+                "id": 5,
+                "course_id": 5,
+                "teacher_user_id": 2,
+                "day_of_week": "Friday",
+                "start_time": "10:00",
+                "end_time": "11:30",
+                "location": "教学楼A308",
+                "semester": "2025-2026秋季学期"
             }
         ],
         "rewardpunishments": [
             {
                 "id": 1,
-                "student_id": 3,
+                "student_id": 1,
                 "type": "reward",
-                "description": "11",
-                "date": "2025-12-01"
+                "description": "在数学竞赛中获得一等奖",
+                "date": "2025-11-15"
             },
             {
                 "id": 2,
-                "student_id": 3,
-                "type": "punishment",
-                "description": "1",
-                "date": "2025-12-01"
+                "student_id": 2,
+                "type": "reward",
+                "description": "拾金不昧，表扬",
+                "date": "2025-11-18"
             },
             {
                 "id": 3,
-                "student_id": 6,
+                "student_id": 3,
                 "type": "punishment",
-                "description": "奖惩",
-                "date": "2025-12-01"
+                "description": "迟到三次以上，警告处分",
+                "date": "2025-11-20"
+            }
+        ],
+        "attendances": [
+            {
+                "id": 1,
+                "student_id": 1,
+                "date": "2025-12-01",
+                "status": "present",
+                "reason": "学生自主签到"
             },
             {
-                "id": 4,
-                "student_id": 3,
-                "type": "reward",
-                "description": "1",
-                "date": "2025-12-01"
-            },
-            {
-                "id": 5,
-                "student_id": 9,
-                "type": "reward",
-                "description": "321",
-                "date": "2025-12-01"
-            },
-            {
-                "id": 6,
-                "student_id": 3,
-                "type": "reward",
-                "description": "1",
-                "date": "2025-12-01"
+                "id": 2,
+                "student_id": 1,
+                "date": "2025-11-09",
+                "status": "present",
+                "reason": ""
             }
         ]
     },
     "next_id": {
-        "users": 6,
-        "students": 10,
-        "courses": 6,
-        "enrollments": 34,
-        "attendance": 13,
-        "parents": 5,
-        "notices": 12,
-        "schedules": 5,
-        "attendances": 3,
-        "rewardpunishments": 7
+        "users": 9,
+        "students": 5,
+        "courses": 7,
+        "enrollments": 11,
+        "attendance": 11,
+        "parents": 6,
+        "notices": 5,
+        "schedules": 6,
+        "rewardpunishments": 4,
+        "attendances": 3
     }
 }
