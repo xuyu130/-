@@ -1,28 +1,19 @@
 student_management_system/
-├── app.py
-├── database.db  (运行app.py后自动生成)
-└── templates/
-    ├── layout.html
-    ├── login.html
-    ├── index.html
-    ├── students.html
-    ├── add_edit_student.html
-    ├── courses.html
-    ├── add_edit_course.html
-    ├── enrollments.html
-    ├── add_edit_enrollment.html
-    ├── attendance.html
-    ├── add_edit_attendance.html
-    ├── rewards_punishments.html
-    ├── add_edit_reward_punishment.html
-    ├── parents.html
-    ├── add_edit_parent.html
-    ├── notices.html
-    ├── add_edit_notice.html
-    ├── users.html
-    └── add_edit_user.html
-    └── admin_statistics.html
 
+## 运行:项目目录/
+├── main.py              # 新的主程序文件
+├── app_factory.py       # 应用工厂
+├── models.py           # 数据模型
+├── repositories.py     # 数据访问层
+├── services.py         # 业务逻辑层
+├── routes.py           # 路由定义
+├── templates/          # HTML模板目录（保持不变）
+│   ├── index.html
+│   ├── login.html
+│   ├── students.html
+│   └── ...（其他模板文件）
+├── static/             # 静态文件目录（保持不变）
+└── app_data.json       # 数据文件（会自动创建）
 ### 进一步改进和考虑
 ## 安全性:
 - CSRF 保护: 对于生产环境，强烈建议使用 Flask-WTF 或其他方式添加 - CSRF 令牌保护所有表单。

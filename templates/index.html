@@ -1,6 +1,7 @@
 {% extends 'layout.html' %}
 
-{% block title %}仪表盘{% endblock %}
+{% block title %}仪表盘仪表盘
+{% endblock %}
 
 {% block content %}
 <h1 class="mb-4">仪表盘</h1>
@@ -97,17 +98,335 @@
                 快速链接
             </div>
             <div class="card-body">
-                <div class="list-group">
+                <div class="row">
+                    <!-- 管理操作链接组 -->
                     {% if session.get('role') in ['admin', 'teacher'] %}
-                    <a href="{{ url_for('add_student') }}" class="list-group-item list-group-item-action">添加新学生</a>
-                    <a href="{{ url_for('add_course') }}" class="list-group-item list-group-item-action">添加新课程</a>
-                    <a href="{{ url_for('add_attendance') }}" class="list-group-item list-group-item-action">记录考勤</a>
-                    <a href="{{ url_for('add_notice') }}" class="list-group-item list-group-item-action">发布新通知</a>
+                    <div class="col-md-6 mb-3">
+                        <h6 class="text-muted mb-2">管理操作</h6>
+                        <div class="list-group">
+                            <button type="button" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+                                <i class="bi bi-person-plus"></i> 添加新学生
+                            </button>
+                            <button type="button" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+                                <i class="bi bi-book-plus"></i> 添加新课程
+                            </button>
+                            <button type="button" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#addAttendanceModal">
+                                <i class="bi bi-check2-square"></i> 记录考勤
+                            </button>
+                            <button type="button" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#addNoticeModal">
+                                <i class="bi bi-bullhorn"></i> 发布新通知
+                            </button>
+                        </div>
+                    </div>
                     {% endif %}
-                    <a href="{{ url_for('statistics') }}" class="list-group-item list-group-item-action">查看统计数据</a>
+                    
+                    <!-- 通用链接组 -->
+                    <div class="{% if session.get('role') in ['admin', 'teacher'] %}col-md-6{% else %}col-md-12{% endif %} mb-3">
+                        <h6 class="text-muted mb-2">
+                            {% if session.get('role') == 'student' %}学生服务{% else %}系统功能{% endif %}
+                        </h6>
+                        <div class="list-group">
+                            {% if session.get('role') == 'student' %}
+                            <a href="{{ url_for('view_grades') }}" class="list-group-item list-group-item-action">
+                                <i class="bi bi-clipboard-data"></i> 成绩查询
+                            </a>
+                            <a href="{{ url_for('student_courses') }}" class="list-group-item list-group-item-action">
+                                <i class="bi bi-book-open"></i> 我的课程
+                            </a>
+                            {% endif %}
+                            <a href="{{ url_for('statistics') }}" class="list-group-item list-group-item-action">
+                                <i class="bi bi-bar-chart"></i> 统计分析
+                            </a>
+                            <a href="{{ url_for('notices') }}" class="list-group-item list-group-item-action">
+                                <i class="bi bi-bell"></i> 所有通知
+                            </a>
+                            {% if session.get('role') in ['admin', 'teacher'] %}
+                            <a href="{{ url_for('parents') }}" class="list-group-item list-group-item-action">
+                                <i class="bi bi-people"></i> 家长管理
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- 添加学生模态框 -->
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addStudentModalLabel">添加新学生</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_student') }}" id="addStudentForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">姓名 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="name" name="name" required 
+                                       placeholder="请输入学生姓名">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="student_id" class="form-label">学号 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="student_id" name="student_id" required 
+                                       placeholder="请输入学号">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="gender" class="form-label">性别 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="gender" name="gender" required>
+                                    <option value="" selected disabled>请选择性别</option>
+                                    <option value="男">男</option>
+                                    <option value="女">女</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="age" class="form-label">年龄 <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="age" name="age" required 
+                                       min="5" max="30" placeholder="请输入年龄">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="contact_phone" class="form-label">联系电话</label>
+                                <input type="tel" class="form-control" id="contact_phone" name="contact_phone" 
+                                       placeholder="请输入联系电话" pattern="[0-9]{11}" maxlength="11">
+                                <div class="form-text">请输入11位手机号码</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="class_name" class="form-label">班级</label>
+                                <input type="text" class="form-control" id="class_name" name="class_name" 
+                                       placeholder="例如：三年二班">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="homeroom_teacher" class="form-label">班主任</label>
+                                <input type="text" class="form-control" id="homeroom_teacher" name="homeroom_teacher" 
+                                       placeholder="请输入班主任姓名">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="family_info" class="form-label">家庭信息</label>
+                        <textarea class="form-control" id="family_info" name="family_info" rows="3" 
+                                  placeholder="请输入家庭信息（如父母姓名、联系方式等）"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">添加学生</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- 添加课程模态框 -->
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="addCourseModal" tabindex="-1" aria-labelledby="addCourseModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCourseModalLabel">添加新课程</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_course') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="course_name" class="form-label">课程名称 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="course_name" name="name" required 
+                               placeholder="请输入课程名称">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">课程描述</label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  rows="3" placeholder="请输入课程描述（可选）"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="credits" class="form-label">学分</label>
+                                <input type="number" class="form-control" id="credits" name="credits" 
+                                       min="0" step="0.5" placeholder="请输入学分">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="capacity" class="form-label">课程容量</label>
+                                <input type="number" class="form-control" id="capacity" name="capacity" 
+                                       min="1" placeholder="请输入课程容量（可选）">
+                                <div class="form-text">不填表示不限容量</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">添加课程</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- 添加考勤模态框 -->
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="addAttendanceModal" tabindex="-1" aria-labelledby="addAttendanceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addAttendanceModalLabel">添加考勤记录</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_attendance') }}">
+                <div class="modal-body">
+                    <input type="hidden" name="referrer" value="{{ request.url }}">
+                    
+                    <div class="mb-3">
+                        <label for="student_id" class="form-label">选择学生 <span class="text-danger">*</span></label>
+                        <select class="form-select" id="student_id" name="student_id" required>
+                            <option value="" selected disabled>请选择学生</option>
+                            {% for student in students %}
+                            <option value="{{ student.id }}">{{ student.name }} ({{ student.student_id }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="date" class="form-label">日期 <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="date" name="date" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="status" class="form-label">考勤状态 <span class="text-danger">*</span></label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="" selected disabled>请选择考勤状态</option>
+                            <option value="present">出勤</option>
+                            <option value="absent">缺勤</option>
+                            <option value="late">迟到</option>
+                            <option value="leave">请假</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">备注</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="2" 
+                                  placeholder="请输入备注信息（可选）"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存考勤</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- 添加通知模态框 -->
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="addNoticeModal" tabindex="-1" aria-labelledby="addNoticeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addNoticeModalLabel">发布新通知</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_notice') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="notice_title" class="form-label">标题 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="notice_title" name="title" required 
+                               placeholder="请输入通知标题">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="content" class="form-label">内容 <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="content" name="content" rows="5" required 
+                                  placeholder="请输入通知内容"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notice_type" class="form-label">通知类型</label>
+                        <select class="form-select" id="notice_type" name="type">
+                            <option value="general">一般通知</option>
+                            <option value="urgent">紧急通知</option>
+                            <option value="event">活动通知</option>
+                            <option value="assignment">作业通知</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">发布通知</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 删除确认
+    const deleteForms = document.querySelectorAll('.delete-form');
+    deleteForms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!confirm('确定要执行此删除操作吗？此操作可能不可恢复！')) {
+                event.preventDefault();
+            }
+        });
+    });
+    
+    // 表单验证
+    const forms = document.querySelectorAll('form[method="POST"]');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            const requiredFields = form.querySelectorAll('[required]');
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.classList.add('is-invalid');
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('请填写所有必填字段！');
+            }
+        });
+    });
+});
+</script>
 {% endblock %}
