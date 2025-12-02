@@ -220,11 +220,24 @@ def setup_routes(app, service_manager):
         return redirect(url_for('students'))
 
     # === 课程管理路由 ===
+    @app.route('/enrollment_status/toggle', methods=['POST'])
+    @admin_required
+    def toggle_enrollment_status():
+        """切换选课状态"""
+        success, status, message = service_manager.enrollment_status_service.toggle_enrollment_status()
+        if success:
+            g.data_modified = True
+            flash(message, 'success')
+        else:
+            flash(message, 'danger')
+        return redirect(url_for('courses'))
+    
     @app.route('/courses')
     @login_required
     def courses():
         course_service = service_manager.course_service
         enrollment_service = service_manager.enrollment_service
+        enrollment_status_service = service_manager.enrollment_status_service  # 添加这行
         
         all_courses = sorted(course_service.get_all_courses(), key=lambda x: x.name)
         
@@ -266,8 +279,12 @@ def setup_routes(app, service_manager):
                 course_data['is_enrolled_by_current_user'] = False
 
             processed_courses.append(course_data)
+        
+        # 获取选课状态
+        enrollment_status = enrollment_status_service.get_enrollment_status()  # 添加这行
 
-        return render_template('courses.html', courses=processed_courses)
+        return render_template('courses.html', courses=processed_courses, 
+                             enrollment_status=enrollment_status)  # 添加enrollment_status参数
 
     @app.route('/courses/add', methods=['GET', 'POST'])
     @teacher_or_admin_required

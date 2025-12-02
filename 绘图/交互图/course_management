@@ -1,0 +1,143 @@
+digraph course_management {
+	rankdir=LR size="14,10"
+	node [color=lightgreen shape=box style=filled]
+	"用户(学生/教师)"
+	"Web界面"
+	CourseService
+	EnrollmentService
+	Database
+	"用户(学生/教师)" -> "Web界面" [label="1. 访问课程管理页面" fontsize=10]
+	{
+		rank=same
+		c_seq_0 [shape=point width=0.1]
+		c_seq_1 [shape=point width=0.1]
+		c_seq_0 -> c_seq_1 [constraint=false style=dashed]
+	}
+	"Web界面" -> CourseService [label="2. 请求课程列表数据" fontsize=10]
+	{
+		rank=same
+		c_seq_1 [shape=point width=0.1]
+		c_seq_2 [shape=point width=0.1]
+		c_seq_1 -> c_seq_2 [constraint=false style=dashed]
+	}
+	CourseService -> Database [label="3. 查询课程信息" fontsize=10]
+	{
+		rank=same
+		c_seq_2 [shape=point width=0.1]
+		c_seq_3 [shape=point width=0.1]
+		c_seq_2 -> c_seq_3 [constraint=false style=dashed]
+	}
+	Database -> CourseService [label="4. 返回课程数据" fontsize=10]
+	{
+		rank=same
+		c_seq_3 [shape=point width=0.1]
+		c_seq_4 [shape=point width=0.1]
+		c_seq_3 -> c_seq_4 [constraint=false style=dashed]
+	}
+	CourseService -> "Web界面" [label="5. 返回课程列表" fontsize=10]
+	{
+		rank=same
+		c_seq_4 [shape=point width=0.1]
+		c_seq_5 [shape=point width=0.1]
+		c_seq_4 -> c_seq_5 [constraint=false style=dashed]
+	}
+	"Web界面" -> "用户(学生/教师)" [label="6. 显示课程列表" fontsize=10]
+	{
+		rank=same
+		c_seq_5 [shape=point width=0.1]
+		c_seq_6 [shape=point width=0.1]
+		c_seq_5 -> c_seq_6 [constraint=false style=dashed]
+	}
+	"用户(学生/教师)" -> "Web界面" [label="7. 选择课程进行选修/分配" fontsize=10]
+	{
+		rank=same
+		c_seq_6 [shape=point width=0.1]
+		c_seq_7 [shape=point width=0.1]
+		c_seq_6 -> c_seq_7 [constraint=false style=dashed]
+	}
+	"Web界面" -> EnrollmentService [label="8. 提交选课请求(学生ID+课程ID)" fontsize=10]
+	{
+		rank=same
+		c_seq_7 [shape=point width=0.1]
+		c_seq_8 [shape=point width=0.1]
+		c_seq_7 -> c_seq_8 [constraint=false style=dashed]
+	}
+	EnrollmentService -> Database [label="9. 检查课程容量和冲突" fontsize=10]
+	{
+		rank=same
+		c_seq_8 [shape=point width=0.1]
+		c_seq_9 [shape=point width=0.1]
+		c_seq_8 -> c_seq_9 [constraint=false style=dashed]
+	}
+	Database -> EnrollmentService [label="10. 返回检查结果" fontsize=10]
+	{
+		rank=same
+		c_seq_9 [shape=point width=0.1]
+		c_seq_10 [shape=point width=0.1]
+		c_seq_9 -> c_seq_10 [constraint=false style=dashed]
+	}
+	EnrollmentService -> Database [label="11. 创建选课记录" fontsize=10]
+	{
+		rank=same
+		c_seq_10 [shape=point width=0.1]
+		c_seq_11 [shape=point width=0.1]
+		c_seq_10 -> c_seq_11 [constraint=false style=dashed]
+	}
+	Database -> EnrollmentService [label="12. 确认选课成功" fontsize=10]
+	{
+		rank=same
+		c_seq_11 [shape=point width=0.1]
+		c_seq_12 [shape=point width=0.1]
+		c_seq_11 -> c_seq_12 [constraint=false style=dashed]
+	}
+	EnrollmentService -> "Web界面" [label="13. 返回选课结果" fontsize=10]
+	{
+		rank=same
+		c_seq_12 [shape=point width=0.1]
+		c_seq_13 [shape=point width=0.1]
+		c_seq_12 -> c_seq_13 [constraint=false style=dashed]
+	}
+	"Web界面" -> "用户(学生/教师)" [label="14. 显示选课成功信息" fontsize=10]
+	{
+		rank=same
+		c_seq_13 [shape=point width=0.1]
+		c_seq_14 [shape=point width=0.1]
+		c_seq_13 -> c_seq_14 [constraint=false style=dashed]
+	}
+	"用户(学生/教师)" -> "Web界面" [label="15. 录入/查询课程成绩" fontsize=10]
+	{
+		rank=same
+		c_seq_14 [shape=point width=0.1]
+		c_seq_15 [shape=point width=0.1]
+		c_seq_14 -> c_seq_15 [constraint=false style=dashed]
+	}
+	"Web界面" -> EnrollmentService [label="16. 提交成绩数据(考试/表现成绩)" fontsize=10]
+	{
+		rank=same
+		c_seq_15 [shape=point width=0.1]
+		c_seq_16 [shape=point width=0.1]
+		c_seq_15 -> c_seq_16 [constraint=false style=dashed]
+	}
+	EnrollmentService -> Database [label="17. 更新成绩记录" fontsize=10]
+	{
+		rank=same
+		c_seq_16 [shape=point width=0.1]
+		c_seq_17 [shape=point width=0.1]
+		c_seq_16 -> c_seq_17 [constraint=false style=dashed]
+	}
+	Database -> EnrollmentService [label="18. 确认成绩更新" fontsize=10]
+	{
+		rank=same
+		c_seq_17 [shape=point width=0.1]
+		c_seq_18 [shape=point width=0.1]
+		c_seq_17 -> c_seq_18 [constraint=false style=dashed]
+	}
+	EnrollmentService -> "Web界面" [label="19. 返回成绩处理结果" fontsize=10]
+	{
+		rank=same
+		c_seq_18 [shape=point width=0.1]
+		c_seq_19 [shape=point width=0.1]
+		c_seq_18 -> c_seq_19 [constraint=false style=dashed]
+	}
+	"Web界面" -> "用户(学生/教师)" [label="20. 显示成绩信息" fontsize=10]
+}

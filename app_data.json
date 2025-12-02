@@ -463,6 +463,12 @@
                 "status": "present",
                 "reason": ""
             }
+        ],
+        "enrollment_status": [
+            {
+                "id": 1,
+                "enrollment_open": true
+            }
         ]
     },
     "next_id": {

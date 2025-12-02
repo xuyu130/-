@@ -1,0 +1,144 @@
+digraph parent_contact {
+	rankdir=LR size="14,10"
+	node [color=lightcyan shape=box style=filled]
+	"Admin/Teacher"
+	"Web界面"
+	ParentService
+	NotificationService
+	Database
+	"第三方服务(短信/邮件)"
+	"Admin/Teacher" -> "Web界面" [label="1. 访问家长管理页面" fontsize=10]
+	{
+		rank=same
+		pc_seq_0 [shape=point width=0.1]
+		pc_seq_1 [shape=point width=0.1]
+		pc_seq_0 -> pc_seq_1 [constraint=false style=dashed]
+	}
+	"Web界面" -> ParentService [label="2. 请求家长信息(按学生筛选)" fontsize=10]
+	{
+		rank=same
+		pc_seq_1 [shape=point width=0.1]
+		pc_seq_2 [shape=point width=0.1]
+		pc_seq_1 -> pc_seq_2 [constraint=false style=dashed]
+	}
+	ParentService -> Database [label="3. 查询家长数据" fontsize=10]
+	{
+		rank=same
+		pc_seq_2 [shape=point width=0.1]
+		pc_seq_3 [shape=point width=0.1]
+		pc_seq_2 -> pc_seq_3 [constraint=false style=dashed]
+	}
+	Database -> ParentService [label="4. 返回家长信息" fontsize=10]
+	{
+		rank=same
+		pc_seq_3 [shape=point width=0.1]
+		pc_seq_4 [shape=point width=0.1]
+		pc_seq_3 -> pc_seq_4 [constraint=false style=dashed]
+	}
+	ParentService -> "Web界面" [label="5. 返回家长列表" fontsize=10]
+	{
+		rank=same
+		pc_seq_4 [shape=point width=0.1]
+		pc_seq_5 [shape=point width=0.1]
+		pc_seq_4 -> pc_seq_5 [constraint=false style=dashed]
+	}
+	"Web界面" -> "Admin/Teacher" [label="6. 显示家长信息" fontsize=10]
+	{
+		rank=same
+		pc_seq_5 [shape=point width=0.1]
+		pc_seq_6 [shape=point width=0.1]
+		pc_seq_5 -> pc_seq_6 [constraint=false style=dashed]
+	}
+	"Admin/Teacher" -> "Web界面" [label="7. 提交家长信息(姓名/联系方式等)" fontsize=10]
+	{
+		rank=same
+		pc_seq_6 [shape=point width=0.1]
+		pc_seq_7 [shape=point width=0.1]
+		pc_seq_6 -> pc_seq_7 [constraint=false style=dashed]
+	}
+	"Web界面" -> ParentService [label="8. 处理家长数据" fontsize=10]
+	{
+		rank=same
+		pc_seq_7 [shape=point width=0.1]
+		pc_seq_8 [shape=point width=0.1]
+		pc_seq_7 -> pc_seq_8 [constraint=false style=dashed]
+	}
+	ParentService -> Database [label="9. 保存家长记录" fontsize=10]
+	{
+		rank=same
+		pc_seq_8 [shape=point width=0.1]
+		pc_seq_9 [shape=point width=0.1]
+		pc_seq_8 -> pc_seq_9 [constraint=false style=dashed]
+	}
+	Database -> ParentService [label="10. 确认记录保存" fontsize=10]
+	{
+		rank=same
+		pc_seq_9 [shape=point width=0.1]
+		pc_seq_10 [shape=point width=0.1]
+		pc_seq_9 -> pc_seq_10 [constraint=false style=dashed]
+	}
+	ParentService -> "Web界面" [label="11. 返回处理结果" fontsize=10]
+	{
+		rank=same
+		pc_seq_10 [shape=point width=0.1]
+		pc_seq_11 [shape=point width=0.1]
+		pc_seq_10 -> pc_seq_11 [constraint=false style=dashed]
+	}
+	"Web界面" -> "Admin/Teacher" [label="12. 显示操作成功信息" fontsize=10]
+	{
+		rank=same
+		pc_seq_11 [shape=point width=0.1]
+		pc_seq_12 [shape=point width=0.1]
+		pc_seq_11 -> pc_seq_12 [constraint=false style=dashed]
+	}
+	"Admin/Teacher" -> "Web界面" [label="13. 选择家长发送通知(内容/方式)" fontsize=10]
+	{
+		rank=same
+		pc_seq_12 [shape=point width=0.1]
+		pc_seq_13 [shape=point width=0.1]
+		pc_seq_12 -> pc_seq_13 [constraint=false style=dashed]
+	}
+	"Web界面" -> NotificationService [label="14. 提交通知请求" fontsize=10]
+	{
+		rank=same
+		pc_seq_13 [shape=point width=0.1]
+		pc_seq_14 [shape=point width=0.1]
+		pc_seq_13 -> pc_seq_14 [constraint=false style=dashed]
+	}
+	NotificationService -> Database [label="15. 保存通知记录" fontsize=10]
+	{
+		rank=same
+		pc_seq_14 [shape=point width=0.1]
+		pc_seq_15 [shape=point width=0.1]
+		pc_seq_14 -> pc_seq_15 [constraint=false style=dashed]
+	}
+	Database -> NotificationService [label="16. 确认记录保存" fontsize=10]
+	{
+		rank=same
+		pc_seq_15 [shape=point width=0.1]
+		pc_seq_16 [shape=point width=0.1]
+		pc_seq_15 -> pc_seq_16 [constraint=false style=dashed]
+	}
+	NotificationService -> "第三方服务(短信/邮件)" [label="17. 转发通知内容" fontsize=10]
+	{
+		rank=same
+		pc_seq_16 [shape=point width=0.1]
+		pc_seq_17 [shape=point width=0.1]
+		pc_seq_16 -> pc_seq_17 [constraint=false style=dashed]
+	}
+	"第三方服务(短信/邮件)" -> NotificationService [label="18. 返回发送结果" fontsize=10]
+	{
+		rank=same
+		pc_seq_17 [shape=point width=0.1]
+		pc_seq_18 [shape=point width=0.1]
+		pc_seq_17 -> pc_seq_18 [constraint=false style=dashed]
+	}
+	NotificationService -> "Web界面" [label="19. 返回通知处理结果" fontsize=10]
+	{
+		rank=same
+		pc_seq_18 [shape=point width=0.1]
+		pc_seq_19 [shape=point width=0.1]
+		pc_seq_18 -> pc_seq_19 [constraint=false style=dashed]
+	}
+	"Web界面" -> "Admin/Teacher" [label="20. 显示通知发送结果" fontsize=10]
+}

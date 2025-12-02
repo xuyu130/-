@@ -1,0 +1,101 @@
+digraph student_course_enrollment {
+	rankdir=LR size="12,8"
+	node [color=lightblue shape=box style=filled]
+	Student
+	WebInterface
+	EnrollmentService
+	CourseService
+	Database
+	Student -> WebInterface [label="1. 浏览课程列表" fontsize=10]
+	{
+		rank=same
+		seq_0 [shape=point width=0.1]
+		seq_1 [shape=point width=0.1]
+		seq_0 -> seq_1 [constraint=false style=dashed]
+	}
+	WebInterface -> CourseService [label="2. 请求课程数据(筛选条件)" fontsize=10]
+	{
+		rank=same
+		seq_1 [shape=point width=0.1]
+		seq_2 [shape=point width=0.1]
+		seq_1 -> seq_2 [constraint=false style=dashed]
+	}
+	CourseService -> Database [label="3. 查询可用课程" fontsize=10]
+	{
+		rank=same
+		seq_2 [shape=point width=0.1]
+		seq_3 [shape=point width=0.1]
+		seq_2 -> seq_3 [constraint=false style=dashed]
+	}
+	Database -> CourseService [label="4. 返回课程列表" fontsize=10]
+	{
+		rank=same
+		seq_3 [shape=point width=0.1]
+		seq_4 [shape=point width=0.1]
+		seq_3 -> seq_4 [constraint=false style=dashed]
+	}
+	CourseService -> WebInterface [label="5. 返回课程数据(含容量信息)" fontsize=10]
+	{
+		rank=same
+		seq_4 [shape=point width=0.1]
+		seq_5 [shape=point width=0.1]
+		seq_4 -> seq_5 [constraint=false style=dashed]
+	}
+	WebInterface -> Student [label="6. 显示课程列表" fontsize=10]
+	{
+		rank=same
+		seq_5 [shape=point width=0.1]
+		seq_6 [shape=point width=0.1]
+		seq_5 -> seq_6 [constraint=false style=dashed]
+	}
+	Student -> WebInterface [label="7. 提交选课请求(课程ID)" fontsize=10]
+	{
+		rank=same
+		seq_6 [shape=point width=0.1]
+		seq_7 [shape=point width=0.1]
+		seq_6 -> seq_7 [constraint=false style=dashed]
+	}
+	WebInterface -> EnrollmentService [label="8. 验证并处理选课" fontsize=10]
+	{
+		rank=same
+		seq_7 [shape=point width=0.1]
+		seq_8 [shape=point width=0.1]
+		seq_7 -> seq_8 [constraint=false style=dashed]
+	}
+	EnrollmentService -> CourseService [label="9. 检查课程容量" fontsize=10]
+	{
+		rank=same
+		seq_8 [shape=point width=0.1]
+		seq_9 [shape=point width=0.1]
+		seq_8 -> seq_9 [constraint=false style=dashed]
+	}
+	CourseService -> EnrollmentService [label="10. 返回容量状态" fontsize=10]
+	{
+		rank=same
+		seq_9 [shape=point width=0.1]
+		seq_10 [shape=point width=0.1]
+		seq_9 -> seq_10 [constraint=false style=dashed]
+	}
+	EnrollmentService -> Database [label="11. 创建选课记录" fontsize=10]
+	{
+		rank=same
+		seq_10 [shape=point width=0.1]
+		seq_11 [shape=point width=0.1]
+		seq_10 -> seq_11 [constraint=false style=dashed]
+	}
+	Database -> EnrollmentService [label="12. 确认记录创建" fontsize=10]
+	{
+		rank=same
+		seq_11 [shape=point width=0.1]
+		seq_12 [shape=point width=0.1]
+		seq_11 -> seq_12 [constraint=false style=dashed]
+	}
+	EnrollmentService -> WebInterface [label="13. 返回选课结果" fontsize=10]
+	{
+		rank=same
+		seq_12 [shape=point width=0.1]
+		seq_13 [shape=point width=0.1]
+		seq_12 -> seq_13 [constraint=false style=dashed]
+	}
+	WebInterface -> Student [label="14. 显示选课成功信息" fontsize=10]
+}

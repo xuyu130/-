@@ -1,0 +1,128 @@
+digraph student_info_management {
+	rankdir=LR size="14,10"
+	node [color=lightblue shape=box style=filled]
+	"Admin/Teacher"
+	"Web界面"
+	StudentService
+	Database
+	"Admin/Teacher" -> "Web界面" [label="1. 访问学生信息管理页面" fontsize=10]
+	{
+		rank=same
+		seq_0 [shape=point width=0.1]
+		seq_1 [shape=point width=0.1]
+		seq_0 -> seq_1 [constraint=false style=dashed]
+	}
+	"Web界面" -> StudentService [label="2. 请求学生列表数据" fontsize=10]
+	{
+		rank=same
+		seq_1 [shape=point width=0.1]
+		seq_2 [shape=point width=0.1]
+		seq_1 -> seq_2 [constraint=false style=dashed]
+	}
+	StudentService -> Database [label="3. 查询所有学生记录" fontsize=10]
+	{
+		rank=same
+		seq_2 [shape=point width=0.1]
+		seq_3 [shape=point width=0.1]
+		seq_2 -> seq_3 [constraint=false style=dashed]
+	}
+	Database -> StudentService [label="4. 返回学生数据" fontsize=10]
+	{
+		rank=same
+		seq_3 [shape=point width=0.1]
+		seq_4 [shape=point width=0.1]
+		seq_3 -> seq_4 [constraint=false style=dashed]
+	}
+	StudentService -> "Web界面" [label="5. 返回格式化学生列表" fontsize=10]
+	{
+		rank=same
+		seq_4 [shape=point width=0.1]
+		seq_5 [shape=point width=0.1]
+		seq_4 -> seq_5 [constraint=false style=dashed]
+	}
+	"Web界面" -> "Admin/Teacher" [label="6. 显示学生列表" fontsize=10]
+	{
+		rank=same
+		seq_5 [shape=point width=0.1]
+		seq_6 [shape=point width=0.1]
+		seq_5 -> seq_6 [constraint=false style=dashed]
+	}
+	"Admin/Teacher" -> "Web界面" [label="7. 提交新增/编辑学生信息（姓名、性别等）" fontsize=10]
+	{
+		rank=same
+		seq_6 [shape=point width=0.1]
+		seq_7 [shape=point width=0.1]
+		seq_6 -> seq_7 [constraint=false style=dashed]
+	}
+	"Web界面" -> StudentService [label="8. 验证并处理学生数据" fontsize=10]
+	{
+		rank=same
+		seq_7 [shape=point width=0.1]
+		seq_8 [shape=point width=0.1]
+		seq_7 -> seq_8 [constraint=false style=dashed]
+	}
+	StudentService -> Database [label="9. 保存/更新学生记录" fontsize=10]
+	{
+		rank=same
+		seq_8 [shape=point width=0.1]
+		seq_9 [shape=point width=0.1]
+		seq_8 -> seq_9 [constraint=false style=dashed]
+	}
+	Database -> StudentService [label="10. 确认操作结果" fontsize=10]
+	{
+		rank=same
+		seq_9 [shape=point width=0.1]
+		seq_10 [shape=point width=0.1]
+		seq_9 -> seq_10 [constraint=false style=dashed]
+	}
+	StudentService -> "Web界面" [label="11. 返回处理结果" fontsize=10]
+	{
+		rank=same
+		seq_10 [shape=point width=0.1]
+		seq_11 [shape=point width=0.1]
+		seq_10 -> seq_11 [constraint=false style=dashed]
+	}
+	"Web界面" -> "Admin/Teacher" [label="12. 显示操作成功信息" fontsize=10]
+	{
+		rank=same
+		seq_11 [shape=point width=0.1]
+		seq_12 [shape=point width=0.1]
+		seq_11 -> seq_12 [constraint=false style=dashed]
+	}
+	"Admin/Teacher" -> "Web界面" [label="13. 选择删除学生" fontsize=10]
+	{
+		rank=same
+		seq_12 [shape=point width=0.1]
+		seq_13 [shape=point width=0.1]
+		seq_12 -> seq_13 [constraint=false style=dashed]
+	}
+	"Web界面" -> StudentService [label="14. 请求删除学生及关联数据" fontsize=10]
+	{
+		rank=same
+		seq_13 [shape=point width=0.1]
+		seq_14 [shape=point width=0.1]
+		seq_13 -> seq_14 [constraint=false style=dashed]
+	}
+	StudentService -> Database [label="15. 执行删除操作（级联删除）" fontsize=10]
+	{
+		rank=same
+		seq_14 [shape=point width=0.1]
+		seq_15 [shape=point width=0.1]
+		seq_14 -> seq_15 [constraint=false style=dashed]
+	}
+	Database -> StudentService [label="16. 确认删除完成" fontsize=10]
+	{
+		rank=same
+		seq_15 [shape=point width=0.1]
+		seq_16 [shape=point width=0.1]
+		seq_15 -> seq_16 [constraint=false style=dashed]
+	}
+	StudentService -> "Web界面" [label="17. 返回删除结果" fontsize=10]
+	{
+		rank=same
+		seq_16 [shape=point width=0.1]
+		seq_17 [shape=point width=0.1]
+		seq_16 -> seq_17 [constraint=false style=dashed]
+	}
+	"Web界面" -> "Admin/Teacher" [label="18. 显示删除成功信息" fontsize=10]
+}

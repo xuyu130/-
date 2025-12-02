@@ -5,6 +5,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from models import *
 from repositories import repo_manager
 
+class EnrollmentStatus:
+    """选课状态模型类"""
+    
+    def __init__(self, id: int = 1, enrollment_open: bool = False):
+        self.id = id
+        self.enrollment_open = enrollment_open
+
 class BaseService:
     """基础服务类"""
     
@@ -40,9 +47,6 @@ class UserService(BaseService):
     def get_all_users(self) -> List[User]:
         """获取所有用户"""
         return self.user_repo.get_all()
-    
-    class UserService(BaseService):
-        """用户服务类 - 修复版本"""
     
     def create_user(self, user_data: Dict[str, Any]) -> Tuple[bool, Optional[User], str]:
         """创建用户 - 修复学生验证"""
@@ -485,6 +489,11 @@ class EnrollmentService(BaseService):
         if not student:
             return False, None, '学生不存在'
         
+        # 检查选课是否开放
+        enrollment_status = self.repo_manager.enrollment_status_repo.get_enrollment_status()
+        if not enrollment_status.enrollment_open:
+            return False, None, '选课通道已关闭，暂时无法选课'
+        
         course = self.course_repo.get_by_id(course_id)
         if not course:
             return False, None, '课程不存在'
@@ -570,7 +579,7 @@ class EnrollmentService(BaseService):
         """获取学生选修的所有课程ID"""
         enrollments = self.enrollment_repo.get_by_student_id(student_id)
         return [enrollment.course_id for enrollment in enrollments]
-# ... existing code ...
+    
     def get_student_enrollments(self, student_id: int) -> List[Enrollment]:
         """获取学生的选课记录"""
         return self.enrollment_repo.get_by_student_id(student_id)
@@ -840,7 +849,6 @@ class RewardPunishmentService(BaseService):
                 filtered_records.append(record)
                 
         return filtered_records
-# ... existing code ...
 
 class ParentService(BaseService):
     """家长信息服务类"""
@@ -1411,6 +1419,7 @@ class ServiceManager:
         self.notice_service = NoticeService()
         self.schedule_service = ScheduleService()
         self.statistics_service = StatisticsService()
+        self.enrollment_status_service = EnrollmentStatusService()  # 添加这一行
 
 class CommunicationService(BaseService):
     """通信服务类 - 处理通知、短信和邮件发送"""
@@ -1500,6 +1509,39 @@ class CommunicationService(BaseService):
         except Exception as e:
             return False, print(f"邮件发送失败: {str(e)}")
 
-# ... existing code ...
+class EnrollmentStatusService(BaseService):
+    """选课状态服务类"""
+    
+    def __init__(self):
+        super().__init__()
+        self.enrollment_status_repo = self.repo_manager.enrollment_status_repo
+    
+    def get_enrollment_status(self) -> EnrollmentStatus:
+        """获取当前选课状态"""
+        return self.enrollment_status_repo.get_enrollment_status()
+    
+    def toggle_enrollment_status(self) -> Tuple[bool, EnrollmentStatus, str]:
+        """切换选课状态"""
+        try:
+            current_status = self.get_enrollment_status()
+            new_status = not current_status.enrollment_open
+            updated_status = self.enrollment_status_repo.update_enrollment_status(new_status)
+            self.enrollment_status_repo.save_data()
+            status_text = "开启" if new_status else "关闭"
+            return True, updated_status, f'选课功能已{status_text}'
+        except Exception as e:
+            return False, None, f'切换选课状态时发生错误: {str(e)}'
+    
+    def set_enrollment_status(self, status: bool) -> Tuple[bool, EnrollmentStatus, str]:
+        """设置选课状态"""
+        try:
+            updated_status = self.enrollment_status_repo.update_enrollment_status(status)
+            self.enrollment_status_repo.save_data()
+            status_text = "开启" if status else "关闭"
+            return True, updated_status, f'选课功能已{status_text}'
+        except Exception as e:
+            return False, None, f'设置选课状态时发生错误: {str(e)}'
+
 # 全局服务管理器实例
 service_manager = ServiceManager()
+

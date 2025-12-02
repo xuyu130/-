@@ -1,0 +1,128 @@
+digraph attendance_management {
+	rankdir=LR size="14,10"
+	node [color=lightyellow shape=box style=filled]
+	Teacher
+	"Web界面"
+	AttendanceService
+	Database
+	Teacher -> "Web界面" [label="1. 访问考勤管理页面" fontsize=10]
+	{
+		rank=same
+		a_seq_0 [shape=point width=0.1]
+		a_seq_1 [shape=point width=0.1]
+		a_seq_0 -> a_seq_1 [constraint=false style=dashed]
+	}
+	"Web界面" -> AttendanceService [label="2. 请求考勤记录列表" fontsize=10]
+	{
+		rank=same
+		a_seq_1 [shape=point width=0.1]
+		a_seq_2 [shape=point width=0.1]
+		a_seq_1 -> a_seq_2 [constraint=false style=dashed]
+	}
+	AttendanceService -> Database [label="3. 查询考勤数据" fontsize=10]
+	{
+		rank=same
+		a_seq_2 [shape=point width=0.1]
+		a_seq_3 [shape=point width=0.1]
+		a_seq_2 -> a_seq_3 [constraint=false style=dashed]
+	}
+	Database -> AttendanceService [label="4. 返回考勤记录" fontsize=10]
+	{
+		rank=same
+		a_seq_3 [shape=point width=0.1]
+		a_seq_4 [shape=point width=0.1]
+		a_seq_3 -> a_seq_4 [constraint=false style=dashed]
+	}
+	AttendanceService -> "Web界面" [label="5. 返回格式化考勤列表" fontsize=10]
+	{
+		rank=same
+		a_seq_4 [shape=point width=0.1]
+		a_seq_5 [shape=point width=0.1]
+		a_seq_4 -> a_seq_5 [constraint=false style=dashed]
+	}
+	"Web界面" -> Teacher [label="6. 显示考勤记录" fontsize=10]
+	{
+		rank=same
+		a_seq_5 [shape=point width=0.1]
+		a_seq_6 [shape=point width=0.1]
+		a_seq_5 -> a_seq_6 [constraint=false style=dashed]
+	}
+	Teacher -> "Web界面" [label="7. 选择学生进行考勤登记" fontsize=10]
+	{
+		rank=same
+		a_seq_6 [shape=point width=0.1]
+		a_seq_7 [shape=point width=0.1]
+		a_seq_6 -> a_seq_7 [constraint=false style=dashed]
+	}
+	"Web界面" -> AttendanceService [label="8. 提交考勤信息" fontsize=10]
+	{
+		rank=same
+		a_seq_7 [shape=point width=0.1]
+		a_seq_8 [shape=point width=0.1]
+		a_seq_7 -> a_seq_8 [constraint=false style=dashed]
+	}
+	AttendanceService -> Database [label="9. 保存考勤记录" fontsize=10]
+	{
+		rank=same
+		a_seq_8 [shape=point width=0.1]
+		a_seq_9 [shape=point width=0.1]
+		a_seq_8 -> a_seq_9 [constraint=false style=dashed]
+	}
+	Database -> AttendanceService [label="10. 确认保存成功" fontsize=10]
+	{
+		rank=same
+		a_seq_9 [shape=point width=0.1]
+		a_seq_10 [shape=point width=0.1]
+		a_seq_9 -> a_seq_10 [constraint=false style=dashed]
+	}
+	AttendanceService -> "Web界面" [label="11. 返回操作结果" fontsize=10]
+	{
+		rank=same
+		a_seq_10 [shape=point width=0.1]
+		a_seq_11 [shape=point width=0.1]
+		a_seq_10 -> a_seq_11 [constraint=false style=dashed]
+	}
+	"Web界面" -> Teacher [label="12. 显示考勤登记成功" fontsize=10]
+	{
+		rank=same
+		a_seq_11 [shape=point width=0.1]
+		a_seq_12 [shape=point width=0.1]
+		a_seq_11 -> a_seq_12 [constraint=false style=dashed]
+	}
+	Teacher -> "Web界面" [label="13. 查询特定时间段考勤统计" fontsize=10]
+	{
+		rank=same
+		a_seq_12 [shape=point width=0.1]
+		a_seq_13 [shape=point width=0.1]
+		a_seq_12 -> a_seq_13 [constraint=false style=dashed]
+	}
+	"Web界面" -> AttendanceService [label="14. 请求考勤统计信息" fontsize=10]
+	{
+		rank=same
+		a_seq_13 [shape=point width=0.1]
+		a_seq_14 [shape=point width=0.1]
+		a_seq_13 -> a_seq_14 [constraint=false style=dashed]
+	}
+	AttendanceService -> Database [label="15. 聚合查询考勤数据" fontsize=10]
+	{
+		rank=same
+		a_seq_14 [shape=point width=0.1]
+		a_seq_15 [shape=point width=0.1]
+		a_seq_14 -> a_seq_15 [constraint=false style=dashed]
+	}
+	Database -> AttendanceService [label="16. 返回统计结果" fontsize=10]
+	{
+		rank=same
+		a_seq_15 [shape=point width=0.1]
+		a_seq_16 [shape=point width=0.1]
+		a_seq_15 -> a_seq_16 [constraint=false style=dashed]
+	}
+	AttendanceService -> "Web界面" [label="17. 返回格式化统计信息" fontsize=10]
+	{
+		rank=same
+		a_seq_16 [shape=point width=0.1]
+		a_seq_17 [shape=point width=0.1]
+		a_seq_16 -> a_seq_17 [constraint=false style=dashed]
+	}
+	"Web界面" -> Teacher [label="18. 显示考勤统计图表" fontsize=10]
+}

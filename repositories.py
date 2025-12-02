@@ -454,7 +454,41 @@ class ScheduleRepository(BaseRepository[Schedule]):
             if item.get('course_id') != course_id
         ]
 
-# ... existing code ...
+@dataclass
+class EnrollmentStatusRepository(BaseRepository[EnrollmentStatus]):
+    """选课状态仓储类"""
+    
+    def __init__(self, data_file: str = 'app_data.json'):
+        super().__init__(data_file)
+        self.table_name = 'enrollment_status'
+        
+    def _dict_to_model(self, item_dict: Dict[str, Any]) -> EnrollmentStatus:
+        return EnrollmentStatus(**item_dict)
+    
+    def get_enrollment_status(self) -> EnrollmentStatus:
+        """获取选课状态配置"""
+        status = self.find_one(id=1)
+        if not status:
+            # 如果不存在，则创建默认配置
+            status = EnrollmentStatus()
+            self.create(status)
+            self.save_data()
+        return status
+    
+    def update_enrollment_status(self, enrollment_open: bool) -> EnrollmentStatus:
+        """更新选课状态"""
+        status = self.get_enrollment_status()
+        if status:
+            updated_status = self.update(status.id, enrollment_open=enrollment_open)
+            self.save_data()
+            return updated_status
+        else:
+            # 如果不存在，则创建新的配置
+            status = EnrollmentStatus(enrollment_open=enrollment_open)
+            created_status = self.create(status)
+            self.save_data()
+            return created_status
+
 class RepositoryManager:
     """仓储管理器，统一管理所有仓储实例"""
     
@@ -477,6 +511,7 @@ class RepositoryManager:
         self.parent_repo = ParentRepository()
         self.notice_repo = NoticeRepository()
         self.schedule_repo = ScheduleRepository()
+        self.enrollment_status_repo = EnrollmentStatusRepository()  # 添加这一行
     
     def save_all(self):
         """保存所有仓储数据"""
@@ -507,6 +542,7 @@ class RepositoryManager:
             print("Default data initialized successfully.")
         else:
             print("Existing data found. Skipping default data initialization.")
+
 
 
 # 全局仓储管理器实例

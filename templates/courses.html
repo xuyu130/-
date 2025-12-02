@@ -6,6 +6,38 @@
 {% block content %}
 <h1 class="mb-4">课程管理</h1>
 
+<!-- 添加选课状态显示 -->
+{% if session.get('role') == 'admin' %}
+<div class="alert alert-info d-flex justify-content-between align-items-center">
+    <div>
+        <strong>选课状态：</strong>
+        {% if enrollment_status.enrollment_open %}
+            <span class="badge bg-success">开放中</span>
+            <span class="ms-2">学生可以选课</span>
+        {% else %}
+            <span class="badge bg-danger">已关闭</span>
+            <span class="ms-2">学生无法选课</span>
+        {% endif %}
+    </div>
+    <form action="{{ url_for('toggle_enrollment_status') }}" method="POST" class="d-inline">
+        <button type="submit" class="btn btn-sm btn-outline-primary">
+            {% if enrollment_status.enrollment_open %}关闭选课{% else %}开放选课{% endif %}
+        </button>
+    </form>
+</div>
+{% elif session.get('role') == 'student' %}
+<div class="alert alert-info">
+    <strong>选课状态：</strong>
+    {% if enrollment_status.enrollment_open %}
+        <span class="badge bg-success">开放中</span>
+        <span class="ms-2">您可以选课</span>
+    {% else %}
+        <span class="badge bg-danger">已关闭</span>
+        <span class="ms-2">选课功能已关闭，暂时无法选课</span>
+    {% endif %}
+</div>
+{% endif %}
+
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4>课程列表</h4>
     {% if session.get('role') in ['admin', 'teacher'] %}
@@ -96,6 +128,8 @@
                                     <i class="bi bi-x-circle"></i> 退选
                                 </button>
                             </form>
+                        {% elif not enrollment_status.enrollment_open %}
+                            <span class="badge bg-secondary">选课已关闭</span>
                         {% elif course.capacity is not none and course.enrolled_count >= course.capacity %}
                             <span class="badge bg-secondary">课程已满</span>
                         {% else %}

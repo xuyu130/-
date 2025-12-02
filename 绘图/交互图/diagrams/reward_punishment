@@ -1,0 +1,128 @@
+digraph reward_punishment {
+	rankdir=LR size="14,10"
+	node [color=lightpink shape=box style=filled]
+	"Teacher/Admin"
+	"Web界面"
+	RewardPunishmentService
+	Database
+	"Teacher/Admin" -> "Web界面" [label="1. 访问奖惩管理页面" fontsize=10]
+	{
+		rank=same
+		rp_seq_0 [shape=point width=0.1]
+		rp_seq_1 [shape=point width=0.1]
+		rp_seq_0 -> rp_seq_1 [constraint=false style=dashed]
+	}
+	"Web界面" -> RewardPunishmentService [label="2. 请求奖惩记录列表" fontsize=10]
+	{
+		rank=same
+		rp_seq_1 [shape=point width=0.1]
+		rp_seq_2 [shape=point width=0.1]
+		rp_seq_1 -> rp_seq_2 [constraint=false style=dashed]
+	}
+	RewardPunishmentService -> Database [label="3. 查询奖惩数据" fontsize=10]
+	{
+		rank=same
+		rp_seq_2 [shape=point width=0.1]
+		rp_seq_3 [shape=point width=0.1]
+		rp_seq_2 -> rp_seq_3 [constraint=false style=dashed]
+	}
+	Database -> RewardPunishmentService [label="4. 返回奖惩记录" fontsize=10]
+	{
+		rank=same
+		rp_seq_3 [shape=point width=0.1]
+		rp_seq_4 [shape=point width=0.1]
+		rp_seq_3 -> rp_seq_4 [constraint=false style=dashed]
+	}
+	RewardPunishmentService -> "Web界面" [label="5. 返回格式化奖惩列表" fontsize=10]
+	{
+		rank=same
+		rp_seq_4 [shape=point width=0.1]
+		rp_seq_5 [shape=point width=0.1]
+		rp_seq_4 -> rp_seq_5 [constraint=false style=dashed]
+	}
+	"Web界面" -> "Teacher/Admin" [label="6. 显示奖惩记录" fontsize=10]
+	{
+		rank=same
+		rp_seq_5 [shape=point width=0.1]
+		rp_seq_6 [shape=point width=0.1]
+		rp_seq_5 -> rp_seq_6 [constraint=false style=dashed]
+	}
+	"Teacher/Admin" -> "Web界面" [label="7. 选择添加奖励或处分" fontsize=10]
+	{
+		rank=same
+		rp_seq_6 [shape=point width=0.1]
+		rp_seq_7 [shape=point width=0.1]
+		rp_seq_6 -> rp_seq_7 [constraint=false style=dashed]
+	}
+	"Web界面" -> RewardPunishmentService [label="8. 提交奖惩信息" fontsize=10]
+	{
+		rank=same
+		rp_seq_7 [shape=point width=0.1]
+		rp_seq_8 [shape=point width=0.1]
+		rp_seq_7 -> rp_seq_8 [constraint=false style=dashed]
+	}
+	RewardPunishmentService -> Database [label="9. 保存奖惩记录" fontsize=10]
+	{
+		rank=same
+		rp_seq_8 [shape=point width=0.1]
+		rp_seq_9 [shape=point width=0.1]
+		rp_seq_8 -> rp_seq_9 [constraint=false style=dashed]
+	}
+	Database -> RewardPunishmentService [label="10. 确认保存成功" fontsize=10]
+	{
+		rank=same
+		rp_seq_9 [shape=point width=0.1]
+		rp_seq_10 [shape=point width=0.1]
+		rp_seq_9 -> rp_seq_10 [constraint=false style=dashed]
+	}
+	RewardPunishmentService -> "Web界面" [label="11. 返回操作结果" fontsize=10]
+	{
+		rank=same
+		rp_seq_10 [shape=point width=0.1]
+		rp_seq_11 [shape=point width=0.1]
+		rp_seq_10 -> rp_seq_11 [constraint=false style=dashed]
+	}
+	"Web界面" -> "Teacher/Admin" [label="12. 显示奖惩记录添加成功" fontsize=10]
+	{
+		rank=same
+		rp_seq_11 [shape=point width=0.1]
+		rp_seq_12 [shape=point width=0.1]
+		rp_seq_11 -> rp_seq_12 [constraint=false style=dashed]
+	}
+	"Teacher/Admin" -> "Web界面" [label="13. 查询学生奖惩统计" fontsize=10]
+	{
+		rank=same
+		rp_seq_12 [shape=point width=0.1]
+		rp_seq_13 [shape=point width=0.1]
+		rp_seq_12 -> rp_seq_13 [constraint=false style=dashed]
+	}
+	"Web界面" -> RewardPunishmentService [label="14. 请求学生奖惩统计" fontsize=10]
+	{
+		rank=same
+		rp_seq_13 [shape=point width=0.1]
+		rp_seq_14 [shape=point width=0.1]
+		rp_seq_13 -> rp_seq_14 [constraint=false style=dashed]
+	}
+	RewardPunishmentService -> Database [label="15. 聚合查询奖惩数据" fontsize=10]
+	{
+		rank=same
+		rp_seq_14 [shape=point width=0.1]
+		rp_seq_15 [shape=point width=0.1]
+		rp_seq_14 -> rp_seq_15 [constraint=false style=dashed]
+	}
+	Database -> RewardPunishmentService [label="16. 返回统计结果" fontsize=10]
+	{
+		rank=same
+		rp_seq_15 [shape=point width=0.1]
+		rp_seq_16 [shape=point width=0.1]
+		rp_seq_15 -> rp_seq_16 [constraint=false style=dashed]
+	}
+	RewardPunishmentService -> "Web界面" [label="17. 返回格式化统计信息" fontsize=10]
+	{
+		rank=same
+		rp_seq_16 [shape=point width=0.1]
+		rp_seq_17 [shape=point width=0.1]
+		rp_seq_16 -> rp_seq_17 [constraint=false style=dashed]
+	}
+	"Web界面" -> "Teacher/Admin" [label="18. 显示学生奖惩统计" fontsize=10]
+}

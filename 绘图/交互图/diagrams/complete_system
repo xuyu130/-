@@ -1,0 +1,177 @@
+digraph complete_system {
+	rankdir=LR size="16,12"
+	node [shape=box style=filled]
+	User [fillcolor=lightblue]
+	"Web界面" [fillcolor=lightgreen]
+	AuthService [fillcolor=lightyellow]
+	StudentService [fillcolor=lightpink]
+	CourseService [fillcolor=lightcyan]
+	AttendanceService [fillcolor=lightgrey]
+	RewardPunishmentService [fillcolor=lightcoral]
+	ParentService [fillcolor=lightsteelblue]
+	NotificationService [fillcolor=lightsalmon]
+	StatisticsService [fillcolor=lightseagreen]
+	Database [fillcolor=lightgoldenrodyellow]
+	User -> "Web界面" [label="1. 登录系统" fontsize=9]
+	{
+		rank=same
+		cs_seq_0 [shape=point width=0.1]
+		cs_seq_1 [shape=point width=0.1]
+		cs_seq_0 -> cs_seq_1 [constraint=false style=dashed]
+	}
+	"Web界面" -> AuthService [label="2. 验证身份" fontsize=9]
+	{
+		rank=same
+		cs_seq_1 [shape=point width=0.1]
+		cs_seq_2 [shape=point width=0.1]
+		cs_seq_1 -> cs_seq_2 [constraint=false style=dashed]
+	}
+	AuthService -> Database [label="3. 查询用户信息" fontsize=9]
+	{
+		rank=same
+		cs_seq_2 [shape=point width=0.1]
+		cs_seq_3 [shape=point width=0.1]
+		cs_seq_2 -> cs_seq_3 [constraint=false style=dashed]
+	}
+	Database -> AuthService [label="4. 返回用户数据" fontsize=9]
+	{
+		rank=same
+		cs_seq_3 [shape=point width=0.1]
+		cs_seq_4 [shape=point width=0.1]
+		cs_seq_3 -> cs_seq_4 [constraint=false style=dashed]
+	}
+	AuthService -> "Web界面" [label="5. 返回验证结果" fontsize=9]
+	{
+		rank=same
+		cs_seq_4 [shape=point width=0.1]
+		cs_seq_5 [shape=point width=0.1]
+		cs_seq_4 -> cs_seq_5 [constraint=false style=dashed]
+	}
+	"Web界面" -> User [label="6. 显示主界面" fontsize=9]
+	{
+		rank=same
+		cs_seq_5 [shape=point width=0.1]
+		cs_seq_6 [shape=point width=0.1]
+		cs_seq_5 -> cs_seq_6 [constraint=false style=dashed]
+	}
+	User -> "Web界面" [label="7. 访问学生信息" fontsize=9]
+	{
+		rank=same
+		cs_seq_6 [shape=point width=0.1]
+		cs_seq_7 [shape=point width=0.1]
+		cs_seq_6 -> cs_seq_7 [constraint=false style=dashed]
+	}
+	"Web界面" -> StudentService [label="8. 请求学生数据" fontsize=9]
+	{
+		rank=same
+		cs_seq_7 [shape=point width=0.1]
+		cs_seq_8 [shape=point width=0.1]
+		cs_seq_7 -> cs_seq_8 [constraint=false style=dashed]
+	}
+	StudentService -> Database [label="9. 查询学生信息" fontsize=9]
+	{
+		rank=same
+		cs_seq_8 [shape=point width=0.1]
+		cs_seq_9 [shape=point width=0.1]
+		cs_seq_8 -> cs_seq_9 [constraint=false style=dashed]
+	}
+	Database -> StudentService [label="10. 返回学生数据" fontsize=9]
+	{
+		rank=same
+		cs_seq_9 [shape=point width=0.1]
+		cs_seq_10 [shape=point width=0.1]
+		cs_seq_9 -> cs_seq_10 [constraint=false style=dashed]
+	}
+	StudentService -> "Web界面" [label="11. 返回学生列表" fontsize=9]
+	{
+		rank=same
+		cs_seq_10 [shape=point width=0.1]
+		cs_seq_11 [shape=point width=0.1]
+		cs_seq_10 -> cs_seq_11 [constraint=false style=dashed]
+	}
+	"Web界面" -> User [label="12. 显示学生信息" fontsize=9]
+	{
+		rank=same
+		cs_seq_11 [shape=point width=0.1]
+		cs_seq_12 [shape=point width=0.1]
+		cs_seq_11 -> cs_seq_12 [constraint=false style=dashed]
+	}
+	User -> "Web界面" [label="13. 访问课程管理" fontsize=9]
+	{
+		rank=same
+		cs_seq_12 [shape=point width=0.1]
+		cs_seq_13 [shape=point width=0.1]
+		cs_seq_12 -> cs_seq_13 [constraint=false style=dashed]
+	}
+	"Web界面" -> CourseService [label="14. 请求课程数据" fontsize=9]
+	{
+		rank=same
+		cs_seq_13 [shape=point width=0.1]
+		cs_seq_14 [shape=point width=0.1]
+		cs_seq_13 -> cs_seq_14 [constraint=false style=dashed]
+	}
+	CourseService -> Database [label="15. 查询课程信息" fontsize=9]
+	{
+		rank=same
+		cs_seq_14 [shape=point width=0.1]
+		cs_seq_15 [shape=point width=0.1]
+		cs_seq_14 -> cs_seq_15 [constraint=false style=dashed]
+	}
+	Database -> CourseService [label="16. 返回课程数据" fontsize=9]
+	{
+		rank=same
+		cs_seq_15 [shape=point width=0.1]
+		cs_seq_16 [shape=point width=0.1]
+		cs_seq_15 -> cs_seq_16 [constraint=false style=dashed]
+	}
+	CourseService -> "Web界面" [label="17. 返回课程列表" fontsize=9]
+	{
+		rank=same
+		cs_seq_16 [shape=point width=0.1]
+		cs_seq_17 [shape=point width=0.1]
+		cs_seq_16 -> cs_seq_17 [constraint=false style=dashed]
+	}
+	"Web界面" -> User [label="18. 显示课程信息" fontsize=9]
+	{
+		rank=same
+		cs_seq_17 [shape=point width=0.1]
+		cs_seq_18 [shape=point width=0.1]
+		cs_seq_17 -> cs_seq_18 [constraint=false style=dashed]
+	}
+	User -> "Web界面" [label="19. 查看统计分析" fontsize=9]
+	{
+		rank=same
+		cs_seq_18 [shape=point width=0.1]
+		cs_seq_19 [shape=point width=0.1]
+		cs_seq_18 -> cs_seq_19 [constraint=false style=dashed]
+	}
+	"Web界面" -> StatisticsService [label="20. 请求统计数据" fontsize=9]
+	{
+		rank=same
+		cs_seq_19 [shape=point width=0.1]
+		cs_seq_20 [shape=point width=0.1]
+		cs_seq_19 -> cs_seq_20 [constraint=false style=dashed]
+	}
+	StatisticsService -> Database [label="21. 聚合查询数据" fontsize=9]
+	{
+		rank=same
+		cs_seq_20 [shape=point width=0.1]
+		cs_seq_21 [shape=point width=0.1]
+		cs_seq_20 -> cs_seq_21 [constraint=false style=dashed]
+	}
+	Database -> StatisticsService [label="22. 返回统计结果" fontsize=9]
+	{
+		rank=same
+		cs_seq_21 [shape=point width=0.1]
+		cs_seq_22 [shape=point width=0.1]
+		cs_seq_21 -> cs_seq_22 [constraint=false style=dashed]
+	}
+	StatisticsService -> "Web界面" [label="23. 返回分析报告" fontsize=9]
+	{
+		rank=same
+		cs_seq_22 [shape=point width=0.1]
+		cs_seq_23 [shape=point width=0.1]
+		cs_seq_22 -> cs_seq_23 [constraint=false style=dashed]
+	}
+	"Web界面" -> User [label="24. 显示统计图表" fontsize=9]
+}

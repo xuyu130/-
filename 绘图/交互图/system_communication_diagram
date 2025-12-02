@@ -1,0 +1,25 @@
+digraph system_communication {
+	layout=circo size="10,10"
+	node [color=lightyellow shape=ellipse style=filled]
+	Student
+	Teacher
+	Admin
+	WebInterface
+	UserService
+	CourseService
+	EnrollmentService
+	GradeService
+	Database
+	Student -> WebInterface [label="使用" fontsize=10]
+	Teacher -> WebInterface [label="使用" fontsize=10]
+	Admin -> WebInterface [label="使用" fontsize=10]
+	WebInterface -> UserService [label="调用" fontsize=10]
+	WebInterface -> CourseService [label="调用" fontsize=10]
+	WebInterface -> EnrollmentService [label="调用" fontsize=10]
+	WebInterface -> GradeService [label="调用" fontsize=10]
+	UserService -> Database [label="读写" fontsize=10]
+	CourseService -> Database [label="读写" fontsize=10]
+	EnrollmentService -> Database [label="读写" fontsize=10]
+	GradeService -> Database [label="读写" fontsize=10]
+	EnrollmentService -> CourseService [label="依赖" fontsize=10]
+}

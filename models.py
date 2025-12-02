@@ -112,6 +112,15 @@ class Schedule:
     def to_dict(self):
         return asdict(self)
 
+@dataclass
+class EnrollmentStatus:
+    """选课状态模型类"""
+    id: int = 1
+    enrollment_open: bool = False
+    
+    def to_dict(self):
+        return asdict(self)
+
 # 数据初始化类
 class DataInitializer:
     @staticmethod

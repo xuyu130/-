@@ -1,0 +1,129 @@
+digraph admin_permission {
+	rankdir=LR size="14,10"
+	node [color=lightgrey shape=box style=filled]
+	Admin
+	"Web界面"
+	UserService
+	StatisticsService
+	Database
+	Admin -> "Web界面" [label="1. 访问管理员控制台" fontsize=10]
+	{
+		rank=same
+		ap_seq_0 [shape=point width=0.1]
+		ap_seq_1 [shape=point width=0.1]
+		ap_seq_0 -> ap_seq_1 [constraint=false style=dashed]
+	}
+	"Web界面" -> UserService [label="2. 请求系统用户列表" fontsize=10]
+	{
+		rank=same
+		ap_seq_1 [shape=point width=0.1]
+		ap_seq_2 [shape=point width=0.1]
+		ap_seq_1 -> ap_seq_2 [constraint=false style=dashed]
+	}
+	UserService -> Database [label="3. 查询用户数据" fontsize=10]
+	{
+		rank=same
+		ap_seq_2 [shape=point width=0.1]
+		ap_seq_3 [shape=point width=0.1]
+		ap_seq_2 -> ap_seq_3 [constraint=false style=dashed]
+	}
+	Database -> UserService [label="4. 返回用户信息" fontsize=10]
+	{
+		rank=same
+		ap_seq_3 [shape=point width=0.1]
+		ap_seq_4 [shape=point width=0.1]
+		ap_seq_3 -> ap_seq_4 [constraint=false style=dashed]
+	}
+	UserService -> "Web界面" [label="5. 返回用户列表" fontsize=10]
+	{
+		rank=same
+		ap_seq_4 [shape=point width=0.1]
+		ap_seq_5 [shape=point width=0.1]
+		ap_seq_4 -> ap_seq_5 [constraint=false style=dashed]
+	}
+	"Web界面" -> Admin [label="6. 显示用户管理页面" fontsize=10]
+	{
+		rank=same
+		ap_seq_5 [shape=point width=0.1]
+		ap_seq_6 [shape=point width=0.1]
+		ap_seq_5 -> ap_seq_6 [constraint=false style=dashed]
+	}
+	Admin -> "Web界面" [label="7. 新增/编辑/删除用户(设置角色权限)" fontsize=10]
+	{
+		rank=same
+		ap_seq_6 [shape=point width=0.1]
+		ap_seq_7 [shape=point width=0.1]
+		ap_seq_6 -> ap_seq_7 [constraint=false style=dashed]
+	}
+	"Web界面" -> UserService [label="8. 处理用户数据" fontsize=10]
+	{
+		rank=same
+		ap_seq_7 [shape=point width=0.1]
+		ap_seq_8 [shape=point width=0.1]
+		ap_seq_7 -> ap_seq_8 [constraint=false style=dashed]
+	}
+	UserService -> Database [label="9. 保存/更新/删除用户记录" fontsize=10]
+	{
+		rank=same
+		ap_seq_8 [shape=point width=0.1]
+		ap_seq_9 [shape=point width=0.1]
+		ap_seq_8 -> ap_seq_9 [constraint=false style=dashed]
+	}
+	Database -> UserService [label="10. 确认操作结果" fontsize=10]
+	{
+		rank=same
+		ap_seq_9 [shape=point width=0.1]
+		ap_seq_10 [shape=point width=0.1]
+		ap_seq_9 -> ap_seq_10 [constraint=false style=dashed]
+	}
+	UserService -> "Web界面" [label="11. 返回处理结果" fontsize=10]
+	{
+		rank=same
+		ap_seq_10 [shape=point width=0.1]
+		ap_seq_11 [shape=point width=0.1]
+		ap_seq_10 -> ap_seq_11 [constraint=false style=dashed]
+	}
+	"Web界面" -> Admin [label="12. 显示用户操作结果" fontsize=10]
+	{
+		rank=same
+		ap_seq_11 [shape=point width=0.1]
+		ap_seq_12 [shape=point width=0.1]
+		ap_seq_11 -> ap_seq_12 [constraint=false style=dashed]
+	}
+	Admin -> "Web界面" [label="13. 访问统计分析页面" fontsize=10]
+	{
+		rank=same
+		ap_seq_12 [shape=point width=0.1]
+		ap_seq_13 [shape=point width=0.1]
+		ap_seq_12 -> ap_seq_13 [constraint=false style=dashed]
+	}
+	"Web界面" -> StatisticsService [label="14. 请求系统统计数据" fontsize=10]
+	{
+		rank=same
+		ap_seq_13 [shape=point width=0.1]
+		ap_seq_14 [shape=point width=0.1]
+		ap_seq_13 -> ap_seq_14 [constraint=false style=dashed]
+	}
+	StatisticsService -> Database [label="15. 聚合查询各类数据" fontsize=10]
+	{
+		rank=same
+		ap_seq_14 [shape=point width=0.1]
+		ap_seq_15 [shape=point width=0.1]
+		ap_seq_14 -> ap_seq_15 [constraint=false style=dashed]
+	}
+	Database -> StatisticsService [label="16. 返回统计结果" fontsize=10]
+	{
+		rank=same
+		ap_seq_15 [shape=point width=0.1]
+		ap_seq_16 [shape=point width=0.1]
+		ap_seq_15 -> ap_seq_16 [constraint=false style=dashed]
+	}
+	StatisticsService -> "Web界面" [label="17. 返回分析报告" fontsize=10]
+	{
+		rank=same
+		ap_seq_16 [shape=point width=0.1]
+		ap_seq_17 [shape=point width=0.1]
+		ap_seq_16 -> ap_seq_17 [constraint=false style=dashed]
+	}
+	"Web界面" -> Admin [label="18. 显示统计图表和分析结果" fontsize=10]
+}
