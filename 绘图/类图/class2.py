@@ -1,13 +1,13 @@
 from graphviz import Digraph
 
-# 服务类与实体类关系图
+# 服务类与实体类关系图 - 黑白版本
 dot_relation = Digraph('服务类与实体类关系图', format='png', 
-                      graph_attr={'rankdir': 'LR', 'fontname': 'SimHei', 'splines': 'line'})
-dot_relation.attr('node', fontname='SimHei')  # 去掉record形状，改用默认形状
-dot_relation.attr('edge', fontname='SimHei')
+                      graph_attr={'rankdir': 'LR', 'fontname': 'SimSun', 'splines': 'line'})
+dot_relation.attr('node', fontname='SimSun')  # 使用宋体保证中文显示
+dot_relation.attr('edge', fontname='SimSun')
 
 # =============== 实体类节点 ===============
-# 基础模型类（使用矩形框）
+# 基础模型类（使用不同形状区分，黑白版本）
 dot_relation.node('BaseModel', label='BaseModel\nid: int\ncreated_at: datetime\nupdated_at: datetime\n+to_dict()\n+from_dict()', shape='rectangle')
 
 # 用户相关实体类
@@ -30,9 +30,9 @@ dot_relation.node('Notice', label='Notice\ntitle: str\ncontent: str\nsender_id: 
 
 # =============== 服务类节点 ===============
 # 接口层（使用菱形框表示接口）
-dot_relation.node('IBaseService', label='IBaseService\n+get_by_id()\n+get_all()\n+create()\n+update()\n+delete()', shape='diamond', style='filled', fillcolor='lightblue')
+dot_relation.node('IBaseService', label='IBaseService\n+get_by_id()\n+get_all()\n+create()\n+update()\n+delete()', shape='diamond')
 
-# 核心服务类（使用圆角矩形）
+# 核心服务类（使用矩形框）
 dot_relation.node('UserService', label='UserService\ndb: Database\n+authenticate_user()\n+get_user_by_role()', shape='box')
 dot_relation.node('StudentService', label='StudentService\ndb: Database\n+get_student_courses()\n+get_student_attendance()', shape='box')
 dot_relation.node('CourseService', label='CourseService\ndb: Database\n+get_course_teachers()\n+get_course_enrollments()', shape='box')
@@ -60,22 +60,22 @@ dot_relation.edge('IBaseService', 'StudentService', label='实现', arrowhead='e
 dot_relation.edge('IBaseService', 'CourseService', label='实现', arrowhead='empty', style='dashed')
 
 # 服务类与实体类的依赖关系
-dot_relation.edge('UserService', 'User', label='操作', arrowhead='open', color='blue')
-dot_relation.edge('UserService', 'Student', label='操作', arrowhead='open', color='blue')
-dot_relation.edge('UserService', 'Teacher', label='操作', arrowhead='open', color='blue')
-dot_relation.edge('UserService', 'Admin', label='操作', arrowhead='open', color='blue')
+dot_relation.edge('UserService', 'User', label='操作', arrowhead='open')
+dot_relation.edge('UserService', 'Student', label='操作', arrowhead='open')
+dot_relation.edge('UserService', 'Teacher', label='操作', arrowhead='open')
+dot_relation.edge('UserService', 'Admin', label='操作', arrowhead='open')
 
-dot_relation.edge('StudentService', 'Student', label='操作', arrowhead='open', color='blue')
-dot_relation.edge('StudentService', 'Enrollment', label='操作', arrowhead='open', color='blue')
-dot_relation.edge('StudentService', 'Attendance', label='操作', arrowhead='open', color='blue')
+dot_relation.edge('StudentService', 'Student', label='操作', arrowhead='open')
+dot_relation.edge('StudentService', 'Enrollment', label='操作', arrowhead='open')
+dot_relation.edge('StudentService', 'Attendance', label='操作', arrowhead='open')
 
-dot_relation.edge('CourseService', 'Course', label='操作', arrowhead='open', color='blue')
-dot_relation.edge('CourseService', 'Schedule', label='操作', arrowhead='open', color='blue')
-dot_relation.edge('CourseService', 'Enrollment', label='操作', arrowhead='open', color='blue')
+dot_relation.edge('CourseService', 'Course', label='操作', arrowhead='open')
+dot_relation.edge('CourseService', 'Schedule', label='操作', arrowhead='open')
+dot_relation.edge('CourseService', 'Enrollment', label='操作', arrowhead='open')
 
-dot_relation.edge('AttendanceService', 'Attendance', label='操作', arrowhead='open', color='blue')
-dot_relation.edge('NotificationService', 'Notice', label='操作', arrowhead='open', color='blue')
-dot_relation.edge('NotificationService', 'Parent', label='操作', arrowhead='open', color='blue')
+dot_relation.edge('AttendanceService', 'Attendance', label='操作', arrowhead='open')
+dot_relation.edge('NotificationService', 'Notice', label='操作', arrowhead='open')
+dot_relation.edge('NotificationService', 'Parent', label='操作', arrowhead='open')
 
 # 服务间依赖关系
 dot_relation.edge('StudentService', 'AttendanceService', label='依赖', arrowhead='open', style='dashed')
@@ -83,5 +83,5 @@ dot_relation.edge('CourseService', 'NotificationService', label='依赖', arrowh
 dot_relation.edge('NotificationService', 'SystemService', label='依赖', arrowhead='open', style='dashed')
 
 # 生成图片
-dot_relation.render('service_entity_relation_diagram', view=False)
-print("关系图已生成：service_entity_relation_diagram.png")
+dot_relation.render('service_entity_relation_diagram_bw', view=False)
+print("黑白关系图已生成：service_entity_relation_diagram_bw.png")
