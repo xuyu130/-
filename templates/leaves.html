@@ -1,0 +1,105 @@
+{% extends 'layout.html' %}
+
+{% block title %}请假管理{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">{{ '请假审批' if is_manager else '我的请假' }}</h1>
+        <p class="text-muted mb-0">查看请假申请状态{% if is_manager %}并执行审批{% endif %}</p>
+    </div>
+</div>
+
+{% if not is_manager %}
+<div class="card mb-4">
+    <div class="card-header">提交新的请假申请</div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('apply_leave') }}" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">开始日期 <span class="text-danger">*</span></label>
+                <input type="date" name="start_date" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">结束日期 <span class="text-danger">*</span></label>
+                <input type="date" name="end_date" class="form-control" required>
+            </div>
+            <div class="col-md-12">
+                <label class="form-label">请假原因 <span class="text-danger">*</span></label>
+                <textarea name="reason" class="form-control" rows="3" placeholder="请输入请假原因" required></textarea>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">提交申请</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>请假申请列表</span>
+        {% if is_manager %}
+        <span class="text-muted small">点击操作按钮审批</span>
+        {% endif %}
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>学生</th>
+                        <th>学号</th>
+                        <th>开始日期</th>
+                        <th>结束日期</th>
+                        <th>原因</th>
+                        <th>状态</th>
+                        <th>审批人</th>
+                        {% if is_manager %}<th class="text-end">操作</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for leave in leaves %}
+                    <tr>
+                        <td>{{ leave.student_name or '未知' }}</td>
+                        <td>{{ leave.student_id_str or '-' }}</td>
+                        <td>{{ leave.start_date }}</td>
+                        <td>{{ leave.end_date }}</td>
+                        <td style="max-width: 320px; white-space: pre-wrap;">{{ leave.reason }}</td>
+                        <td>
+                            {% if leave.status == 'approved' %}
+                                <span class="badge bg-success">已批准</span>
+                            {% elif leave.status == 'rejected' %}
+                                <span class="badge bg-danger">已驳回</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">待审批</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ leave.approver_name or '-' }}</td>
+                        {% if is_manager %}
+                        <td class="text-end">
+                            {% if leave.status == 'pending' %}
+                            <form method="POST" action="{{ url_for('review_leave', leave_id=leave.id) }}" class="d-inline">
+                                <input type="hidden" name="decision" value="approved">
+                                <button type="submit" class="btn btn-sm btn-success">批准</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('review_leave', leave_id=leave.id) }}" class="d-inline ms-1">
+                                <input type="hidden" name="decision" value="rejected">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">驳回</button>
+                            </form>
+                            {% else %}
+                            <span class="text-muted">已处理</span>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="{% if is_manager %}8{% else %}7{% endif %}" class="text-center text-muted py-4">暂无请假记录</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

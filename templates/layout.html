@@ -115,6 +115,11 @@
                         <span class="emoji">📚</span>选课中心
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'leaves' %}active{% endif %}" href="{{ url_for('leaves') }}">
+                        <span class="emoji">🛫</span>请假申请
+                    </a>
+                </li>
                 {% endif %}
                 {# 只有管理员和教师可见的管理模块 #}
                 {% if session.get('role') in ['admin', 'teacher'] %}

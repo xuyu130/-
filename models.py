@@ -63,6 +63,21 @@ class Attendance:
         return asdict(self)
 
 @dataclass
+class LeaveRequest:
+    id: int
+    student_id: int
+    start_date: str
+    end_date: str
+    reason: str
+    status: str = 'pending'
+    approver_id: Optional[int] = None
+    created_at: str = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    updated_at: str = ''
+    
+    def to_dict(self):
+        return asdict(self)
+
+@dataclass
 class RewardPunishment:
     id: int
     student_id: int

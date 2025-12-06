@@ -6,11 +6,16 @@
 {% block content %}
 <h1 class="mb-4">考勤管理</h1>
 
+<h5 class="mb-3 text-muted">考勤状况</h5>
+
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <form method="GET" class="d-flex gap-2">
             <input type="date" name="start_date" value="{{ request.args.get('start_date', '') }}" class="form-control" placeholder="开始日期">
             <input type="date" name="end_date" value="{{ request.args.get('end_date', '') }}" class="form-control" placeholder="结束日期">
+            {% if session.get('role') in ['admin', 'teacher'] %}
+            <input type="hidden" name="hide_processed" value="{{ '1' if hide_processed else '0' }}">
+            {% endif %}
             <button type="submit" class="btn btn-secondary">筛选</button>
         </form>
     </div>
@@ -72,6 +77,86 @@
         </tbody>
     </table>
 </div>
+
+{% if session.get('role') in ['admin', 'teacher'] %}
+<div class="mt-5">
+    <h5 class="mb-3 text-muted">请假审批</h5>
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="p-3 border-bottom d-flex align-items-center justify-content-between">
+                <div>
+                    <label class="form-check-label small text-muted" for="hideProcessedToggle">仅显示待审批</label>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="hideProcessedToggle" {% if hide_processed %}checked{% endif %}
+                        onchange="toggleHideProcessed(this)">
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>学生</th>
+                            <th>学号</th>
+                            <th>起始日期</th>
+                            <th>结束日期</th>
+                            <th>原因</th>
+                            <th>状态</th>
+                            <th>审批人</th>
+                            <th class="text-end">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for leave in leaves %}
+                        <tr>
+                            <td>{{ leave.student_name or '未知' }}</td>
+                            <td>{{ leave.student_id_str or '-' }}</td>
+                            <td>{{ leave.start_date }}</td>
+                            <td>{{ leave.end_date }}</td>
+                            <td style="max-width:320px; white-space: pre-wrap;">{{ leave.reason }}</td>
+                            <td>
+                                {% if leave.status == 'approved' %}
+                                    <span class="badge bg-success">已批准</span>
+                                {% elif leave.status == 'rejected' %}
+                                    <span class="badge bg-danger">已驳回</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">待审批</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ leave.approver_name or '-' }}</td>
+                            <td class="text-end">
+                                {% if leave.status == 'pending' %}
+                                <form method="POST" action="{{ url_for('review_leave', leave_id=leave.id) }}" class="d-inline">
+                                    <input type="hidden" name="decision" value="approved">
+                                    <button type="submit" class="btn btn-sm btn-success">批准</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('review_leave', leave_id=leave.id) }}" class="d-inline ms-1">
+                                    <input type="hidden" name="decision" value="rejected">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">驳回</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('delete_leave', leave_id=leave.id) }}" class="d-inline ms-1" onsubmit="return confirm('确定删除该请假吗？相关请假考勤将一并删除');">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">删除</button>
+                                </form>
+                                {% else %}
+                                <span class="text-muted">已处理</span>
+                                <form method="POST" action="{{ url_for('delete_leave', leave_id=leave.id) }}" class="d-inline ms-2" onsubmit="return confirm('确定删除该请假吗？相关请假考勤将一并删除');">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">删除</button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">暂无请假申请。</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <!-- 添加考勤记录的模态框 -->
 {% if session.get('role') in ['admin', 'teacher'] %}
@@ -181,6 +266,11 @@
 
 {% block extra_js %}
 <script>
+function toggleHideProcessed(el){
+    const url = new URL(window.location.href);
+    url.searchParams.set('hide_processed', el.checked ? '1' : '0');
+    window.location = url.toString();
+}
 // 页面加载完成后的处理
 document.addEventListener('DOMContentLoaded', function() {
     // 删除确认

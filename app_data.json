@@ -11,7 +11,7 @@
             {
                 "id": 2,
                 "username": "teacher_li",
-                "password": "scrypt:32768:8:1$x3abBYA4jEhtnriH$d1db6997c6e380d0b0701cb672bb0fcfcb67043563d23ff1fa74779a3d1d71544e00b678a7734a74ac2601e2cf1d390fafe50ba1ec16266d4ba5b54cc84e40b8",
+                "password": "scrypt:32768:8:1$gZre2Ym4ImlBqyVt$ef0bae0219ed4af7e11a11124935dc90a7de9da9f2109e4c18230fe3b487bfbf91c5587b8293f268f50f6ede92135d05f7ffd47a0024ae065d34ce9d30d23420",
                 "role": "teacher",
                 "student_info_id": null
             },
@@ -39,14 +39,14 @@
             {
                 "id": 6,
                 "username": "admin2",
-                "password": "scrypt:32768:8:1$GfKOP6ecRpxbmhM0$8bb4c5f9f1663a00b86581ae80b900753769a03675aa35f8a0200bf7662c52622a7c52371619c72789486ea9917f750b8a34e24036d2965e19dba57d496cde8c",
+                "password": "scrypt:32768:8:1$YtHdAty4rPJMjFhH$dd1b9e981d57dedab57b4aa5d4bfd866966fbd6d66ce68efcd7a7e0909d659b359bd8b07e4c44d1dd2f227d206ccd790f7fb081e040765bb19a91fe582d0240b",
                 "role": "admin",
                 "student_info_id": null
             },
             {
                 "id": 7,
                 "username": "teacher_wang",
-                "password": "scrypt:32768:8:1$x3abBYA4jEhtnriH$d1db6997c6e380d0b0701cb672bb0fcfcb67043563d23ff1fa74779a3d1d71544e00b678a7734a74ac2601e2cf1d390fafe50ba1ec16266d4ba5b54cc84e40b8",
+                "password": "scrypt:32768:8:1$vQRcDyFisWd7Oycj$fde58eccce44092e516fba1aa5bd3194a0f0c7ec77de6b1c9dadab40be3d3ff9772982016a51fbc61a442a822f4c7fe918d752cd88b3359a1dcd36ff2146caab",
                 "role": "teacher",
                 "student_info_id": null
             },
@@ -102,6 +102,1051 @@
                 "family_info": "父亲：王大山，母亲：李美丽",
                 "class_name": "高一(2)班",
                 "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 6,
+                "name": "学生006",
+                "gender": "女",
+                "age": 15,
+                "student_id": "S20230006",
+                "contact_phone": "13810000006",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 7,
+                "name": "学生007",
+                "gender": "男",
+                "age": 16,
+                "student_id": "S20230007",
+                "contact_phone": "13810000007",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 8,
+                "name": "学生008",
+                "gender": "女",
+                "age": 17,
+                "student_id": "S20230008",
+                "contact_phone": "13810000008",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 9,
+                "name": "学生009",
+                "gender": "男",
+                "age": 15,
+                "student_id": "S20230009",
+                "contact_phone": "13810000009",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 10,
+                "name": "学生010",
+                "gender": "女",
+                "age": 16,
+                "student_id": "S20230010",
+                "contact_phone": "13810000010",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 11,
+                "name": "学生011",
+                "gender": "男",
+                "age": 17,
+                "student_id": "S20230011",
+                "contact_phone": "13810000011",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 12,
+                "name": "学生012",
+                "gender": "女",
+                "age": 15,
+                "student_id": "S20230012",
+                "contact_phone": "13810000012",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 13,
+                "name": "学生013",
+                "gender": "男",
+                "age": 16,
+                "student_id": "S20230013",
+                "contact_phone": "13810000013",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 14,
+                "name": "学生014",
+                "gender": "女",
+                "age": 17,
+                "student_id": "S20230014",
+                "contact_phone": "13810000014",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 15,
+                "name": "学生015",
+                "gender": "男",
+                "age": 15,
+                "student_id": "S20230015",
+                "contact_phone": "13810000015",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 16,
+                "name": "学生016",
+                "gender": "女",
+                "age": 16,
+                "student_id": "S20230016",
+                "contact_phone": "13810000016",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 17,
+                "name": "学生017",
+                "gender": "男",
+                "age": 17,
+                "student_id": "S20230017",
+                "contact_phone": "13810000017",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 18,
+                "name": "学生018",
+                "gender": "女",
+                "age": 15,
+                "student_id": "S20230018",
+                "contact_phone": "13810000018",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 19,
+                "name": "学生019",
+                "gender": "男",
+                "age": 16,
+                "student_id": "S20230019",
+                "contact_phone": "13810000019",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 20,
+                "name": "学生020",
+                "gender": "女",
+                "age": 17,
+                "student_id": "S20230020",
+                "contact_phone": "13810000020",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 21,
+                "name": "学生021",
+                "gender": "男",
+                "age": 15,
+                "student_id": "S20230021",
+                "contact_phone": "13810000021",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 22,
+                "name": "学生022",
+                "gender": "女",
+                "age": 16,
+                "student_id": "S20230022",
+                "contact_phone": "13810000022",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 23,
+                "name": "学生023",
+                "gender": "男",
+                "age": 17,
+                "student_id": "S20230023",
+                "contact_phone": "13810000023",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 24,
+                "name": "学生024",
+                "gender": "女",
+                "age": 15,
+                "student_id": "S20230024",
+                "contact_phone": "13810000024",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 25,
+                "name": "学生025",
+                "gender": "男",
+                "age": 16,
+                "student_id": "S20230025",
+                "contact_phone": "13810000025",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 26,
+                "name": "学生026",
+                "gender": "女",
+                "age": 17,
+                "student_id": "S20230026",
+                "contact_phone": "13810000026",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 27,
+                "name": "学生027",
+                "gender": "男",
+                "age": 15,
+                "student_id": "S20230027",
+                "contact_phone": "13810000027",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 28,
+                "name": "学生028",
+                "gender": "女",
+                "age": 16,
+                "student_id": "S20230028",
+                "contact_phone": "13810000028",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 29,
+                "name": "学生029",
+                "gender": "男",
+                "age": 17,
+                "student_id": "S20230029",
+                "contact_phone": "13810000029",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 30,
+                "name": "学生030",
+                "gender": "女",
+                "age": 15,
+                "student_id": "S20230030",
+                "contact_phone": "13810000030",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 31,
+                "name": "学生031",
+                "gender": "男",
+                "age": 16,
+                "student_id": "S20230031",
+                "contact_phone": "13810000031",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 32,
+                "name": "学生032",
+                "gender": "女",
+                "age": 17,
+                "student_id": "S20230032",
+                "contact_phone": "13810000032",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 33,
+                "name": "学生033",
+                "gender": "男",
+                "age": 15,
+                "student_id": "S20230033",
+                "contact_phone": "13810000033",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 34,
+                "name": "学生034",
+                "gender": "女",
+                "age": 16,
+                "student_id": "S20230034",
+                "contact_phone": "13810000034",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 35,
+                "name": "学生035",
+                "gender": "男",
+                "age": 17,
+                "student_id": "S20230035",
+                "contact_phone": "13810000035",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 36,
+                "name": "学生036",
+                "gender": "女",
+                "age": 15,
+                "student_id": "S20230036",
+                "contact_phone": "13810000036",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 37,
+                "name": "学生037",
+                "gender": "男",
+                "age": 16,
+                "student_id": "S20230037",
+                "contact_phone": "13810000037",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 38,
+                "name": "学生038",
+                "gender": "女",
+                "age": 17,
+                "student_id": "S20230038",
+                "contact_phone": "13810000038",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 39,
+                "name": "学生039",
+                "gender": "男",
+                "age": 15,
+                "student_id": "S20230039",
+                "contact_phone": "13810000039",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 40,
+                "name": "学生040",
+                "gender": "女",
+                "age": 16,
+                "student_id": "S20230040",
+                "contact_phone": "13810000040",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 41,
+                "name": "学生041",
+                "gender": "男",
+                "age": 17,
+                "student_id": "S20230041",
+                "contact_phone": "13810000041",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 42,
+                "name": "学生042",
+                "gender": "女",
+                "age": 15,
+                "student_id": "S20230042",
+                "contact_phone": "13810000042",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 43,
+                "name": "学生043",
+                "gender": "男",
+                "age": 16,
+                "student_id": "S20230043",
+                "contact_phone": "13810000043",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 44,
+                "name": "学生044",
+                "gender": "女",
+                "age": 17,
+                "student_id": "S20230044",
+                "contact_phone": "13810000044",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 45,
+                "name": "学生045",
+                "gender": "男",
+                "age": 15,
+                "student_id": "S20230045",
+                "contact_phone": "13810000045",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 46,
+                "name": "学生046",
+                "gender": "女",
+                "age": 16,
+                "student_id": "S20230046",
+                "contact_phone": "13810000046",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 47,
+                "name": "学生047",
+                "gender": "男",
+                "age": 17,
+                "student_id": "S20230047",
+                "contact_phone": "13810000047",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 48,
+                "name": "学生048",
+                "gender": "女",
+                "age": 15,
+                "student_id": "S20230048",
+                "contact_phone": "13810000048",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 49,
+                "name": "学生049",
+                "gender": "男",
+                "age": 16,
+                "student_id": "S20230049",
+                "contact_phone": "13810000049",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 50,
+                "name": "学生050",
+                "gender": "女",
+                "age": 17,
+                "student_id": "S20230050",
+                "contact_phone": "13810000050",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 51,
+                "name": "学生051",
+                "gender": "男",
+                "age": 15,
+                "student_id": "S20230051",
+                "contact_phone": "13810000051",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 52,
+                "name": "学生052",
+                "gender": "女",
+                "age": 16,
+                "student_id": "S20230052",
+                "contact_phone": "13810000052",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 53,
+                "name": "学生053",
+                "gender": "男",
+                "age": 17,
+                "student_id": "S20230053",
+                "contact_phone": "13810000053",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 54,
+                "name": "学生054",
+                "gender": "女",
+                "age": 15,
+                "student_id": "S20230054",
+                "contact_phone": "13810000054",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 55,
+                "name": "学生055",
+                "gender": "男",
+                "age": 16,
+                "student_id": "S20230055",
+                "contact_phone": "13810000055",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 56,
+                "name": "学生056",
+                "gender": "女",
+                "age": 17,
+                "student_id": "S20230056",
+                "contact_phone": "13810000056",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 57,
+                "name": "学生057",
+                "gender": "男",
+                "age": 15,
+                "student_id": "S20230057",
+                "contact_phone": "13810000057",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 58,
+                "name": "学生058",
+                "gender": "女",
+                "age": 16,
+                "student_id": "S20230058",
+                "contact_phone": "13810000058",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 59,
+                "name": "学生059",
+                "gender": "男",
+                "age": 17,
+                "student_id": "S20230059",
+                "contact_phone": "13810000059",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 60,
+                "name": "学生060",
+                "gender": "女",
+                "age": 15,
+                "student_id": "S20230060",
+                "contact_phone": "13810000060",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 61,
+                "name": "学生061",
+                "gender": "男",
+                "age": 16,
+                "student_id": "S20230061",
+                "contact_phone": "13810000061",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 62,
+                "name": "学生062",
+                "gender": "女",
+                "age": 17,
+                "student_id": "S20230062",
+                "contact_phone": "13810000062",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 63,
+                "name": "学生063",
+                "gender": "男",
+                "age": 15,
+                "student_id": "S20230063",
+                "contact_phone": "13810000063",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 64,
+                "name": "学生064",
+                "gender": "女",
+                "age": 16,
+                "student_id": "S20230064",
+                "contact_phone": "13810000064",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 65,
+                "name": "学生065",
+                "gender": "男",
+                "age": 17,
+                "student_id": "S20230065",
+                "contact_phone": "13810000065",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 66,
+                "name": "学生066",
+                "gender": "女",
+                "age": 15,
+                "student_id": "S20230066",
+                "contact_phone": "13810000066",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 67,
+                "name": "学生067",
+                "gender": "男",
+                "age": 16,
+                "student_id": "S20230067",
+                "contact_phone": "13810000067",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 68,
+                "name": "学生068",
+                "gender": "女",
+                "age": 17,
+                "student_id": "S20230068",
+                "contact_phone": "13810000068",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 69,
+                "name": "学生069",
+                "gender": "男",
+                "age": 15,
+                "student_id": "S20230069",
+                "contact_phone": "13810000069",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 70,
+                "name": "学生070",
+                "gender": "女",
+                "age": 16,
+                "student_id": "S20230070",
+                "contact_phone": "13810000070",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 71,
+                "name": "学生071",
+                "gender": "男",
+                "age": 17,
+                "student_id": "S20230071",
+                "contact_phone": "13810000071",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 72,
+                "name": "学生072",
+                "gender": "女",
+                "age": 15,
+                "student_id": "S20230072",
+                "contact_phone": "13810000072",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 73,
+                "name": "学生073",
+                "gender": "男",
+                "age": 16,
+                "student_id": "S20230073",
+                "contact_phone": "13810000073",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 74,
+                "name": "学生074",
+                "gender": "女",
+                "age": 17,
+                "student_id": "S20230074",
+                "contact_phone": "13810000074",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 75,
+                "name": "学生075",
+                "gender": "男",
+                "age": 15,
+                "student_id": "S20230075",
+                "contact_phone": "13810000075",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 76,
+                "name": "学生076",
+                "gender": "女",
+                "age": 16,
+                "student_id": "S20230076",
+                "contact_phone": "13810000076",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 77,
+                "name": "学生077",
+                "gender": "男",
+                "age": 17,
+                "student_id": "S20230077",
+                "contact_phone": "13810000077",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 78,
+                "name": "学生078",
+                "gender": "女",
+                "age": 15,
+                "student_id": "S20230078",
+                "contact_phone": "13810000078",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 79,
+                "name": "学生079",
+                "gender": "男",
+                "age": 16,
+                "student_id": "S20230079",
+                "contact_phone": "13810000079",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 80,
+                "name": "学生080",
+                "gender": "女",
+                "age": 17,
+                "student_id": "S20230080",
+                "contact_phone": "13810000080",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 81,
+                "name": "学生081",
+                "gender": "男",
+                "age": 15,
+                "student_id": "S20230081",
+                "contact_phone": "13810000081",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 82,
+                "name": "学生082",
+                "gender": "女",
+                "age": 16,
+                "student_id": "S20230082",
+                "contact_phone": "13810000082",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 83,
+                "name": "学生083",
+                "gender": "男",
+                "age": 17,
+                "student_id": "S20230083",
+                "contact_phone": "13810000083",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 84,
+                "name": "学生084",
+                "gender": "女",
+                "age": 15,
+                "student_id": "S20230084",
+                "contact_phone": "13810000084",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 85,
+                "name": "学生085",
+                "gender": "男",
+                "age": 16,
+                "student_id": "S20230085",
+                "contact_phone": "13810000085",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 86,
+                "name": "学生086",
+                "gender": "女",
+                "age": 17,
+                "student_id": "S20230086",
+                "contact_phone": "13810000086",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 87,
+                "name": "学生087",
+                "gender": "男",
+                "age": 15,
+                "student_id": "S20230087",
+                "contact_phone": "13810000087",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 88,
+                "name": "学生088",
+                "gender": "女",
+                "age": 16,
+                "student_id": "S20230088",
+                "contact_phone": "13810000088",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 89,
+                "name": "学生089",
+                "gender": "男",
+                "age": 17,
+                "student_id": "S20230089",
+                "contact_phone": "13810000089",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 90,
+                "name": "学生090",
+                "gender": "女",
+                "age": 15,
+                "student_id": "S20230090",
+                "contact_phone": "13810000090",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 91,
+                "name": "学生091",
+                "gender": "男",
+                "age": 16,
+                "student_id": "S20230091",
+                "contact_phone": "13810000091",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 92,
+                "name": "学生092",
+                "gender": "女",
+                "age": 17,
+                "student_id": "S20230092",
+                "contact_phone": "13810000092",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 93,
+                "name": "学生093",
+                "gender": "男",
+                "age": 15,
+                "student_id": "S20230093",
+                "contact_phone": "13810000093",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 94,
+                "name": "学生094",
+                "gender": "女",
+                "age": 16,
+                "student_id": "S20230094",
+                "contact_phone": "13810000094",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 95,
+                "name": "学生095",
+                "gender": "男",
+                "age": 17,
+                "student_id": "S20230095",
+                "contact_phone": "13810000095",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 96,
+                "name": "学生096",
+                "gender": "女",
+                "age": 15,
+                "student_id": "S20230096",
+                "contact_phone": "13810000096",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
+            },
+            {
+                "id": 97,
+                "name": "学生097",
+                "gender": "男",
+                "age": 16,
+                "student_id": "S20230097",
+                "contact_phone": "13810000097",
+                "family_info": "",
+                "class_name": "高一(1)班",
+                "homeroom_teacher": "李老师"
+            },
+            {
+                "id": 98,
+                "name": "学生098",
+                "gender": "女",
+                "age": 17,
+                "student_id": "S20230098",
+                "contact_phone": "13810000098",
+                "family_info": "",
+                "class_name": "高一(2)班",
+                "homeroom_teacher": "赵老师"
+            },
+            {
+                "id": 99,
+                "name": "学生099",
+                "gender": "男",
+                "age": 15,
+                "student_id": "S20230099",
+                "contact_phone": "13810000099",
+                "family_info": "",
+                "class_name": "高一(3)班",
+                "homeroom_teacher": "王老师"
+            },
+            {
+                "id": 100,
+                "name": "学生100",
+                "gender": "女",
+                "age": 16,
+                "student_id": "S20230100",
+                "contact_phone": "13810000100",
+                "family_info": "",
+                "class_name": "高一(4)班",
+                "homeroom_teacher": "周老师"
             }
         ],
         "courses": [
@@ -218,6 +1263,20 @@
                 "course_id": 6,
                 "exam_score": 85.0,
                 "performance_score": 90.0
+            },
+            {
+                "id": 11,
+                "student_id": 2,
+                "course_id": 7,
+                "exam_score": null,
+                "performance_score": null
+            },
+            {
+                "id": 12,
+                "student_id": 1,
+                "course_id": 4,
+                "exam_score": null,
+                "performance_score": null
             }
         ],
         "attendance": [
@@ -371,6 +1430,54 @@
                 "date": "2025-11-28 16:00:00",
                 "target": "",
                 "sender": "校长办公室"
+            },
+            {
+                "id": 5,
+                "title": "1",
+                "content": "1",
+                "target": "parent_1",
+                "sender": "admin",
+                "date": "2025-12-05 16:43:08"
+            },
+            {
+                "id": 6,
+                "title": "1",
+                "content": "1",
+                "target": "parent_2",
+                "sender": "admin",
+                "date": "2025-12-05 16:43:08"
+            },
+            {
+                "id": 7,
+                "title": "1",
+                "content": "1",
+                "target": "parent_3",
+                "sender": "admin",
+                "date": "2025-12-05 16:43:08"
+            },
+            {
+                "id": 8,
+                "title": "1",
+                "content": "1",
+                "target": "parent_4",
+                "sender": "admin",
+                "date": "2025-12-05 16:43:09"
+            },
+            {
+                "id": 9,
+                "title": "1",
+                "content": "1",
+                "target": "parent_5",
+                "sender": "admin",
+                "date": "2025-12-05 16:43:09"
+            },
+            {
+                "id": 10,
+                "title": "1",
+                "content": "1",
+                "target": "parent_5",
+                "sender": "admin",
+                "date": "2025-12-05 16:43:13"
             }
         ],
         "schedules": [
@@ -462,6 +1569,27 @@
                 "date": "2025-11-09",
                 "status": "present",
                 "reason": ""
+            },
+            {
+                "id": 3,
+                "student_id": 2,
+                "date": "2025-12-05",
+                "status": "present",
+                "reason": "学生自主签到"
+            },
+            {
+                "id": 4,
+                "student_id": 1,
+                "date": "2025-12-05",
+                "status": "present",
+                "reason": "学生自主签到"
+            },
+            {
+                "id": 5,
+                "student_id": 3,
+                "date": "2025-12-05",
+                "status": "present",
+                "reason": "学生自主签到"
             }
         ],
         "enrollment_status": [
@@ -469,18 +1597,20 @@
                 "id": 1,
                 "enrollment_open": true
             }
-        ]
+        ],
+        "leaverequests": []
     },
     "next_id": {
         "users": 9,
-        "students": 5,
-        "courses": 7,
-        "enrollments": 11,
+        "students": 6,
+        "courses": 8,
+        "enrollments": 13,
         "attendance": 11,
         "parents": 6,
-        "notices": 5,
+        "notices": 11,
         "schedules": 6,
         "rewardpunishments": 4,
-        "attendances": 3
+        "attendances": 6,
+        "leaverequests": 3
     }
 }

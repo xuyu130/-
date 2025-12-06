@@ -1,6 +1,7 @@
 # repositories.py
 import json
 import os
+import threading
 from typing import List, Dict, Any, Optional, Type, TypeVar, Generic
 from models import *
 
@@ -13,6 +14,7 @@ class BaseRepository(Generic[T]):
         self.data_file = data_file
         self.data = self._load_data()
         self.table_name = self.__class__.__name__.replace('Repository', '').lower() + 's'
+        self._lock = threading.Lock()
     
     def _load_data(self) -> Dict[str, Any]:
         """从JSON文件加载数据"""
@@ -27,30 +29,31 @@ class BaseRepository(Generic[T]):
     
     def save_data(self):
         """保存数据到JSON文件 - 简洁版本"""
-        try:
-            with open(self.data_file, 'w', encoding='utf-8') as f:
-                json.dump(self.data, f, ensure_ascii=False, indent=4)
-            
-            # 验证保存
-            import os
-            if os.path.exists(self.data_file):
-                file_size = os.path.getsize(self.data_file)
-                print(f"✅ 数据已保存到 {self.data_file} ({file_size} bytes)")
-                return True
-            else:
-                print(f"❌ 保存失败: {self.data_file} 不存在")
+        with self._lock:
+            try:
+                with open(self.data_file, 'w', encoding='utf-8') as f:
+                    json.dump(self.data, f, ensure_ascii=False, indent=4)
+                
+                # 验证保存
+                if os.path.exists(self.data_file):
+                    file_size = os.path.getsize(self.data_file)
+                    print(f"✅ 数据已保存到 {self.data_file} ({file_size} bytes)")
+                    return True
+                else:
+                    print(f"❌ 保存失败: {self.data_file} 不存在")
+                    return False
+                
+            except Exception as e:
+                print(f"❌ 保存数据时发生错误: {e}")
+                
                 return False
-            
-        except Exception as e:
-            print(f"❌ 保存数据时发生错误: {e}")
-            
-            return False
     
     def get_next_id(self) -> int:
         """获取下一个ID"""
-        next_id = self.data['next_id'].get(self.table_name, 1)
-        self.data['next_id'][self.table_name] = next_id + 1
-        return next_id
+        with self._lock:
+            next_id = self.data['next_id'].get(self.table_name, 1)
+            self.data['next_id'][self.table_name] = next_id + 1
+            return next_id
     
     def _ensure_table_exists(self):
         """确保数据表存在"""
@@ -97,29 +100,32 @@ class BaseRepository(Generic[T]):
     
     def create(self, item: T) -> T:
         """创建新记录"""
-        self._ensure_table_exists()
-        item_dict = self._model_to_dict(item)
-        self.data['in_memory_data'][self.table_name].append(item_dict)
-        return item
+        with self._lock:
+            self._ensure_table_exists()
+            item_dict = self._model_to_dict(item)
+            self.data['in_memory_data'][self.table_name].append(item_dict)
+            return item
     
     def update(self, item_id: int, **kwargs) -> Optional[T]:
         """更新记录"""
-        self._ensure_table_exists()
-        for item_dict in self.data['in_memory_data'][self.table_name]:
-            if item_dict.get('id') == item_id:
-                item_dict.update(kwargs)
-                return self._dict_to_model(item_dict)
-        return None
+        with self._lock:
+            self._ensure_table_exists()
+            for item_dict in self.data['in_memory_data'][self.table_name]:
+                if item_dict.get('id') == item_id:
+                    item_dict.update(kwargs)
+                    return self._dict_to_model(item_dict)
+            return None
     
     def delete(self, item_id: int) -> bool:
         """删除记录"""
-        self._ensure_table_exists()
-        original_len = len(self.data['in_memory_data'][self.table_name])
-        self.data['in_memory_data'][self.table_name] = [
-            item for item in self.data['in_memory_data'][self.table_name] 
-            if item.get('id') != item_id
-        ]
-        return len(self.data['in_memory_data'][self.table_name]) < original_len
+        with self._lock:
+            self._ensure_table_exists()
+            original_len = len(self.data['in_memory_data'][self.table_name])
+            self.data['in_memory_data'][self.table_name] = [
+                item for item in self.data['in_memory_data'][self.table_name] 
+                if item.get('id') != item_id
+            ]
+            return len(self.data['in_memory_data'][self.table_name]) < original_len
     
     def count(self) -> int:
         """获取记录数量"""
@@ -454,6 +460,18 @@ class ScheduleRepository(BaseRepository[Schedule]):
             if item.get('course_id') != course_id
         ]
 
+class LeaveRequestRepository(BaseRepository[LeaveRequest]):
+    """请假申请仓储"""
+
+    def _dict_to_model(self, item_dict: Dict[str, Any]) -> LeaveRequest:
+        return LeaveRequest(**item_dict)
+
+    def get_by_student(self, student_id: int) -> List[LeaveRequest]:
+        return self.find(student_id=student_id)
+
+    def get_by_status(self, status: str) -> List[LeaveRequest]:
+        return self.find(status=status)
+
 @dataclass
 class EnrollmentStatusRepository(BaseRepository[EnrollmentStatus]):
     """选课状态仓储类"""
@@ -512,6 +530,7 @@ class RepositoryManager:
         self.notice_repo = NoticeRepository()
         self.schedule_repo = ScheduleRepository()
         self.enrollment_status_repo = EnrollmentStatusRepository()  # 添加这一行
+        self.leave_request_repo = LeaveRequestRepository()
     
     def save_all(self):
         """保存所有仓储数据"""

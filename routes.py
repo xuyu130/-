@@ -509,6 +509,7 @@ def setup_routes(app, service_manager):
         try:
             success = enrollment_service.enrollment_repo.delete(enrollment_id)
             if success:
+                enrollment_service.enrollment_repo.save_data()
                 g.data_modified = True
                 flash('选课记录删除成功！', 'success')
             else:
@@ -524,6 +525,8 @@ def setup_routes(app, service_manager):
     def attendance():
         attendance_service = service_manager.attendance_service
         student_service = service_manager.student_service
+        leave_service = service_manager.leave_service
+        user_service = service_manager.user_service
         
         # 获取所有考勤记录并关联学生信息
         attendance_records = []
@@ -551,14 +554,37 @@ def setup_routes(app, service_manager):
         elif end_date:
             filtered_records = [r for r in attendance_records if r['date'] <= end_date]
         
+        # 请假审批列表（仅教师/管理员）
+        hide_processed = request.args.get('hide_processed', '1') == '1'
+        leaves_raw = leave_service.get_all_leaves()
+        students_map = {s.id: s for s in student_service.get_all_students()}
+        approver_map = {u.id: u for u in user_service.get_all_users()}
+        leaves = []
+        for leave in leaves_raw:
+            if hide_processed and leave.status != 'pending':
+                continue
+            item = leave.to_dict()
+            student = students_map.get(leave.student_id)
+            if student:
+                item['student_name'] = student.name
+                item['student_id_str'] = student.student_id
+            if leave.approver_id:
+                approver = approver_map.get(leave.approver_id)
+                if approver:
+                    item['approver_name'] = approver.username
+            leaves.append(item)
+        leaves = sorted(leaves, key=lambda x: x.get('created_at', ''), reverse=True)
+
         # 获取学生列表用于添加模态框
         students = sorted(student_service.get_all_students(), key=lambda x: x.name)
         
         return render_template('attendance.html', 
-                            attendance_records=filtered_records, 
-                            students=[s.to_dict() for s in students],
-                            start_date=start_date,
-                            end_date=end_date)
+                    attendance_records=filtered_records, 
+                    students=[s.to_dict() for s in students],
+                    start_date=start_date,
+                    end_date=end_date,
+                    leaves=leaves,
+                    hide_processed=hide_processed)
 
     @app.route('/attendance/add', methods=['POST'])
     @teacher_or_admin_required
@@ -630,6 +656,7 @@ def setup_routes(app, service_manager):
         try:
             success = attendance_service.attendance_repo.delete(id)
             if success:
+                attendance_service.attendance_repo.save_data()
                 g.data_modified = True
                 flash('考勤记录删除成功！', 'success')
             else:
@@ -662,6 +689,91 @@ def setup_routes(app, service_manager):
             flash(message, 'info')  # 使用info而不是danger，因为可能是重复签到
         
         return redirect(url_for('index'))
+
+    # === 学生请假与审批 ===
+    @app.route('/leaves')
+    @login_required
+    def leaves():
+        leave_service = service_manager.leave_service
+        user_service = service_manager.user_service
+        student_service = service_manager.student_service
+
+        role = session.get('role')
+        # 教师/管理员直接使用考勤页面的审批入口
+        if role in ['admin', 'teacher']:
+            return redirect(url_for('attendance'))
+
+        # 学生查看/提交
+        current_user = user_service.get_user_by_id(session['user_id'])
+        if not current_user or not current_user.student_info_id:
+            flash('未找到关联的学生信息，无法申请请假。', 'danger')
+            return redirect(url_for('index'))
+
+        leaves_raw = leave_service.get_leaves_for_student(current_user.student_info_id)
+
+        students_map = {s.id: s for s in student_service.get_all_students()}
+        leaves = []
+        for leave in leaves_raw:
+            item = leave.to_dict()
+            student = students_map.get(leave.student_id)
+            if student:
+                item['student_name'] = student.name
+                item['student_id_str'] = student.student_id
+            leaves.append(item)
+
+        leaves = sorted(leaves, key=lambda x: x.get('created_at', ''), reverse=True)
+
+        return render_template('leaves.html', leaves=leaves, is_manager=False)
+
+    @app.route('/leaves/apply', methods=['POST'])
+    @student_required
+    def apply_leave():
+        leave_service = service_manager.leave_service
+        user_service = service_manager.user_service
+
+        current_user = user_service.get_user_by_id(session['user_id'])
+        if not current_user or not current_user.student_info_id:
+            flash('未找到关联的学生信息，无法申请请假。', 'danger')
+            return redirect(url_for('leaves'))
+
+        start_date = request.form.get('start_date')
+        end_date = request.form.get('end_date')
+        reason = request.form.get('reason', '')
+
+        success, leave, message = leave_service.apply_leave(current_user.student_info_id, start_date, end_date, reason)
+        if success:
+            g.data_modified = True
+            flash(message, 'success')
+        else:
+            flash(message, 'danger')
+        return redirect(url_for('leaves'))
+
+    @app.route('/leaves/<int:leave_id>/review', methods=['POST'])
+    @teacher_or_admin_required
+    def review_leave(leave_id):
+        leave_service = service_manager.leave_service
+        decision = request.form.get('decision')
+        success, updated_leave, message = leave_service.review_leave(leave_id, session['user_id'], decision)
+        if success:
+            g.data_modified = True
+            flash(message, 'success')
+        else:
+            flash(message, 'danger')
+        # 返回来源页：考勤页优先，其次请假页
+        ref = request.headers.get('Referer') or url_for('leaves')
+        return redirect(ref)
+
+    @app.route('/leaves/<int:leave_id>/delete', methods=['POST'])
+    @teacher_or_admin_required
+    def delete_leave(leave_id):
+        success, message = service_manager.leave_service.delete_leave(leave_id)
+        if success:
+            g.data_modified = True
+            flash(message, 'success')
+        else:
+            flash(message, 'danger')
+        ref = request.headers.get('Referer') or url_for('attendance')
+        return redirect(ref)
 
     # === 奖励处分管理路由 ===
     @app.route('/rewards_punishments')
@@ -753,6 +865,7 @@ def setup_routes(app, service_manager):
         try:
             success = rp_service.reward_punishment_repo.delete(id)
             if success:
+                rp_service.reward_punishment_repo.save_data()
                 g.data_modified = True
                 flash('奖励/处分记录删除成功！', 'success')
             else:
@@ -1006,6 +1119,7 @@ def setup_routes(app, service_manager):
         try:
             success = notice_service.notice_repo.delete(id)
             if success:
+                notice_service.notice_repo.save_data()
                 g.data_modified = True
                 flash('通知删除成功！', 'success')
             else:
@@ -1298,6 +1412,7 @@ def setup_routes(app, service_manager):
         try:
             success = schedule_service.schedule_repo.delete(id)
             if success:
+                schedule_service.schedule_repo.save_data()
                 g.data_modified = True
                 flash('排课删除成功！', 'success')
             else:

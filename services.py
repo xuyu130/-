@@ -706,6 +706,145 @@ class AttendanceService(BaseService):
         return self.attendance_repo.get_attendance_stats(start_date, end_date)
 
 
+class LeaveService(BaseService):
+    """请假申请服务"""
+
+    def __init__(self):
+        super().__init__()
+        self.leave_repo = self.repo_manager.leave_request_repo
+        self.student_repo = self.repo_manager.student_repo
+        self.user_repo = self.repo_manager.user_repo
+
+    def apply_leave(self, student_id: int, start_date: str, end_date: str, reason: str) -> Tuple[bool, Optional[LeaveRequest], str]:
+        """学生提交请假申请"""
+        if not reason.strip():
+            return False, None, '请假原因不能为空'
+
+        # 验证学生存在
+        student = self.student_repo.get_by_id(student_id)
+        if not student:
+            return False, None, '学生不存在'
+
+        # 校验日期顺序
+        try:
+            start_dt = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_dt = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
+        except ValueError:
+            return False, None, '日期格式应为YYYY-MM-DD'
+
+        if start_dt > end_dt:
+            return False, None, '开始日期不能晚于结束日期'
+
+        try:
+            leave_id = self.leave_repo.get_next_id()
+            leave = LeaveRequest(
+                id=leave_id,
+                student_id=student_id,
+                start_date=start_date,
+                end_date=end_date,
+                reason=reason.strip(),
+                status='pending',
+                approver_id=None,
+                created_at=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            )
+            created_leave = self.leave_repo.create(leave)
+            self.leave_repo.save_data()
+            return True, created_leave, '请假申请已提交，等待审批'
+        except Exception as e:
+            return False, None, f'提交请假申请时发生错误: {str(e)}'
+
+    def review_leave(self, leave_id: int, approver_user_id: int, decision: str) -> Tuple[bool, Optional[LeaveRequest], str]:
+        """教师/管理员审批请假"""
+        leave = self.leave_repo.get_by_id(leave_id)
+        if not leave:
+            return False, None, '请假记录不存在'
+
+        if leave.status != 'pending':
+            return False, None, '该申请已处理'
+
+        if decision not in ['approved', 'rejected']:
+            return False, None, '无效的审批决策'
+
+        # 校验审批人角色
+        approver = self.user_repo.get_by_id(approver_user_id)
+        if not approver or approver.role not in ['teacher', 'admin']:
+            return False, None, '审批人无权限'
+
+        try:
+            updated_leave = self.leave_repo.update(
+                leave_id,
+                status=decision,
+                approver_id=approver_user_id,
+                updated_at=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            )
+
+            if not updated_leave:
+                return False, None, '更新请假状态失败'
+
+            # 如果批准，则同步到考勤记录
+            if decision == 'approved':
+                start_dt = datetime.datetime.strptime(leave.start_date, '%Y-%m-%d').date()
+                end_dt = datetime.datetime.strptime(leave.end_date, '%Y-%m-%d').date()
+                day_count = (end_dt - start_dt).days + 1
+                reason_text = f"请假（审批通过）: {leave.reason}"
+
+                for i in range(day_count):
+                    day = (start_dt + datetime.timedelta(days=i)).strftime('%Y-%m-%d')
+                    existing = self.repo_manager.attendance_repo.get_by_student_and_date(leave.student_id, day)
+                    if existing:
+                        self.repo_manager.attendance_repo.update(existing.id, status='leave', reason=reason_text)
+                    else:
+                        attendance_id = self.repo_manager.attendance_repo.get_next_id()
+                        attendance = Attendance(
+                            id=attendance_id,
+                            student_id=leave.student_id,
+                            date=day,
+                            status='leave',
+                            reason=reason_text
+                        )
+                        self.repo_manager.attendance_repo.create(attendance)
+                self.repo_manager.attendance_repo.save_data()
+
+            self.leave_repo.save_data()
+            msg = '已批准' if decision == 'approved' else '已驳回'
+            return True, updated_leave, f'请假申请{msg}'
+        except Exception as e:
+            return False, None, f'审批请假时发生错误: {str(e)}'
+
+    def delete_leave(self, leave_id: int) -> Tuple[bool, str]:
+        """删除请假申请，若已批准则级联清理对应考勤"""
+        leave = self.leave_repo.get_by_id(leave_id)
+        if not leave:
+            return False, '请假记录不存在'
+
+        try:
+            # 若已批准，移除对应日期范围内的请假考勤记录
+            if leave.status == 'approved':
+                start_dt = datetime.datetime.strptime(leave.start_date, '%Y-%m-%d').date()
+                end_dt = datetime.datetime.strptime(leave.end_date, '%Y-%m-%d').date()
+                day_count = (end_dt - start_dt).days + 1
+                att_repo = self.repo_manager.attendance_repo
+                for i in range(day_count):
+                    day = (start_dt + datetime.timedelta(days=i)).strftime('%Y-%m-%d')
+                    existing = att_repo.get_by_student_and_date(leave.student_id, day)
+                    if existing and existing.status == 'leave':
+                        att_repo.delete(existing.id)
+                att_repo.save_data()
+
+            # 删除请假记录
+            self.leave_repo.delete(leave_id)
+            self.leave_repo.save_data()
+            return True, '请假记录已删除'
+        except Exception as e:
+            return False, f'删除请假记录时发生错误: {str(e)}'
+
+    def get_leaves_for_student(self, student_id: int) -> List[LeaveRequest]:
+        return self.leave_repo.get_by_student(student_id)
+
+    def get_all_leaves(self) -> List[LeaveRequest]:
+        return self.leave_repo.get_all()
+
+
 class RewardPunishmentService(BaseService):
     """奖励处分服务类"""
     
@@ -1420,6 +1559,8 @@ class ServiceManager:
         self.schedule_service = ScheduleService()
         self.statistics_service = StatisticsService()
         self.enrollment_status_service = EnrollmentStatusService()  # 添加这一行
+        self.communication_service = CommunicationService()
+        self.leave_service = LeaveService()
 
 class CommunicationService(BaseService):
     """通信服务类 - 处理通知、短信和邮件发送"""
@@ -1504,10 +1645,14 @@ class CommunicationService(BaseService):
 
             # 这里应该集成真实的邮件发送服务
             # 目前只是模拟发送过程
+            # 模拟发送并返回友好提示
+            msg = f"邮件已发送至 {parent.email}"
             print(f"Email模拟发送至 {parent.email}, 主题: {subject}")
-            return True,print(f"邮件已发送至 {parent.email}")
+            return True, msg
         except Exception as e:
-            return False, print(f"邮件发送失败: {str(e)}")
+            err_msg = f"邮件发送失败: {str(e)}"
+            print(err_msg)
+            return False, err_msg
 
 class EnrollmentStatusService(BaseService):
     """选课状态服务类"""
