@@ -3,49 +3,68 @@
 {% block title %}登录{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center mt-5">
-    <div class="col-md-6 col-lg-4">
-        <div class="card shadow-sm">  <!-- 增加阴影效果 -->
-            <div class="card-header text-center bg-primary text-white">  <!-- 标题栏配色 -->
-                <h3 class="mb-0">用户登录</h3>
+<div class="login-hero py-5">
+    <div class="login-overlay"></div>
+    <div class="container position-relative">
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8 text-center text-light mb-4">
+                <p class="eyebrow mb-2">学生管理系统</p>
+                <h1 class="display-6 fw-semibold mb-2">欢迎回来</h1>
+                <p class="lead fw-normal text-white-50 mb-0">请使用账号登录以继续管理与学习。</p>
             </div>
-            <div class="card-body">
-                <!-- 显示登录错误信息（关键添加） -->
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card glass-card shadow-lg border-0">
+                    <div class="card-header text-center border-0 bg-transparent text-white">
+                        <h3 class="mb-0">用户登录</h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- 显示登录错误信息（关键添加） -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
 
-                <form method="POST" action="{{ url_for('login') }}">
-                    <div class="mb-3">
-                        <label for="username" class="form-label">用户名</label>
-                        <input type="text" class="form-control" id="username" name="username" 
-                               required autofocus>  <!-- 自动聚焦到用户名输入框 -->
+                        <form method="POST" action="{{ url_for('login') }}" class="needs-validation" novalidate>
+                            <div class="mb-3">
+                                <label for="username" class="form-label text-light">用户名</label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text bg-dark text-light border-0"><i class="bi bi-person"></i></span>
+                                    <input type="text" class="form-control" id="username" name="username" required autofocus>
+                                    <div class="invalid-feedback">请输入用户名</div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label text-light">密码</label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text bg-dark text-light border-0"><i class="bi bi-lock"></i></span>
+                                    <input type="password" class="form-control" id="password" name="password" required>
+                                    <button class="btn btn-outline-light" type="button" id="togglePassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <div class="invalid-feedback">请输入密码</div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 d-flex align-items-center justify-content-between text-light">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="remember_me" name="remember_me">
+                                    <label class="form-check-label" for="remember_me">记住我</label>
+                                </div>
+                                <small class="text-white-50">保持设备安全</small>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100 py-3 btn-glow">登录</button>
+                        </form>
                     </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">密码</label>
-                        <div class="input-group">
-                            <input type="password" class="form-control" id="password" name="password" required>
-                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- 增加"记住我"选项（可选） -->
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="remember_me" name="remember_me">
-                        <label class="form-check-label" for="remember_me">记住我</label>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary w-100 py-2">登录</button>
-                </form>
+                </div>
             </div>
         </div>
     </div>
@@ -53,14 +72,86 @@
 {% endblock %}
 
 {% block extra_css %}
-<!-- 可选：添加自定义样式增强交互体验 -->
 <style>
-    .form-control:focus {
-        border-color: #86b7fe;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    :root {
+        --login-bg-img: url('{{ url_for('static', filename='loginimage.png') }}');
+        /* 深色叠加提升对比度 */
+        --login-gradient: linear-gradient(135deg, rgba(10, 22, 44, 0.82) 0%, rgba(18, 60, 110, 0.75) 45%, rgba(13, 110, 253, 0.42) 100%);
+        --card-blur: 18px;
     }
-    .btn-primary:hover {
+    body {
+        background: var(--login-gradient), var(--login-bg-img);
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }
+    .login-hero {
+        position: relative;
+        min-height: calc(100vh - 56px);
+        overflow: hidden;
+    }
+    .login-overlay {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 25% 20%, rgba(255,255,255,0.12), transparent 38%),
+                    radial-gradient(circle at 80% 12%, rgba(0,0,0,0.22), transparent 36%),
+                    radial-gradient(circle at 52% 78%, rgba(0,0,0,0.28), transparent 42%);
         opacity: 0.9;
+    }
+    .glass-card {
+        backdrop-filter: blur(var(--card-blur));
+        background: rgba(15, 23, 42, 0.72);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 1rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.32);
+    }
+    .glass-card .form-control {
+           background: rgba(241, 245, 249, 0.82);
+           border: 1px solid rgba(148, 163, 184, 0.6);
+        color: #0d1b2a;
+    }
+    .glass-card .form-control:focus {
+           box-shadow: 0 0 0 0.22rem rgba(13, 110, 253, 0.28);
+           border-color: rgba(13, 110, 253, 0.5);
+    }
+    .input-group-text {
+           background: rgba(13, 110, 253, 0.12);
+           color: #0d6efd;
+           border: 1px solid rgba(13, 110, 253, 0.2);
+    }
+    /* 标签与提示文字颜色调整，使其更易读 */
+    .glass-card .form-label {
+           color: rgba(233, 237, 245, 0.9);
+    }
+    .glass-card .invalid-feedback,
+    .glass-card small {
+           color: rgba(233, 237, 245, 0.75);
+    }
+    .btn-glow {
+        border-radius: 0.75rem;
+        box-shadow: 0 10px 30px rgba(13, 110, 253, 0.28);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .btn-glow:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 34px rgba(13, 110, 253, 0.5);
+    }
+    .eyebrow {
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        color: rgba(140, 9, 9, 0.7);
+    }
+    .card-header h3 {
+        color: #360505;
+    }
+    .alert {
+        border-radius: 0.75rem;
+    }
+    @media (max-width: 576px) {
+        .login-hero { padding: 3rem 1.25rem; }
+        .display-6 { font-size: 1.75rem; }
+        .glass-card { border-radius: 0.9rem; }
     }
 </style>
 {% endblock %}

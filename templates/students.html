@@ -8,9 +8,14 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4>学生列表</h4>
     {% if session.get('role') in ['admin', 'teacher'] %}
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStudentModal">
-        <i class="bi bi-plus-circle"></i> 添加新学生
-    </button>
+    <div class="btn-group">
+        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importStudentsModal">
+            <i class="bi bi-upload"></i> 导入CSV
+        </button>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+            <i class="bi bi-plus-circle"></i> 添加新学生
+        </button>
+    </div>
     {% endif %}
 </div>
 
@@ -108,8 +113,64 @@
     </table>
 </div>
 
+{% if total_pages > 1 %}
+<div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+    <div class="text-muted small">共 {{ total_students }} 条 · 每页 {{ page_size }} 条 · 第 {{ page }} / {{ total_pages }} 页</div>
+    <nav aria-label="学生分页">
+        <ul class="pagination mb-0">
+            <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('students', page=1, class=class_filter, search=search_query) }}" aria-label="第一页">
+                    «
+                </a>
+            </li>
+            <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('students', page=page-1, class=class_filter, search=search_query) }}" aria-label="上一页">
+                    上一页
+                </a>
+            </li>
+            <li class="page-item disabled"><span class="page-link">{{ page }}</span></li>
+            <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('students', page=page+1, class=class_filter, search=search_query) }}" aria-label="下一页">
+                    下一页
+                </a>
+            </li>
+            <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('students', page=total_pages, class=class_filter, search=search_query) }}" aria-label="最后一页">
+                    »
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+{% endif %}
+
 <!-- 添加学生模态框 -->
 {% if session.get('role') in ['admin', 'teacher'] %}
+<div class="modal fade" id="importStudentsModal" tabindex="-1" aria-labelledby="importStudentsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importStudentsModalLabel">批量导入学生（CSV）</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('import_students') }}" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="studentsCsvFile" class="form-label">选择CSV文件 <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" id="studentsCsvFile" name="file" accept=".csv" required>
+                        <div class="form-text">编码需为UTF-8，首行必须包含表头：name, gender, age, student_id, contact_phone, family_info, class_name, homeroom_teacher</div>
+                    </div>
+                    <a class="link-primary" href="{{ url_for('download_student_import_template') }}">下载模板</a>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">开始导入</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">

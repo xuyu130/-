@@ -78,6 +78,28 @@
     </table>
 </div>
 
+{% if total_pages > 1 %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+    <div class="text-muted">第 {{ page }} / {{ total_pages }} 页 · 共 {{ total_records }} 条记录</div>
+    <div>
+        <ul class="pagination mb-0">
+            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('attendance', page=1, start_date=start_date, end_date=end_date, hide_processed='1' if hide_processed else '0') }}">首页</a>
+            </li>
+            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('attendance', page=page-1 if page > 1 else 1, start_date=start_date, end_date=end_date, hide_processed='1' if hide_processed else '0') }}">上一页</a>
+            </li>
+            <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('attendance', page=page+1 if page < total_pages else total_pages, start_date=start_date, end_date=end_date, hide_processed='1' if hide_processed else '0') }}">下一页</a>
+            </li>
+            <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('attendance', page=total_pages, start_date=start_date, end_date=end_date, hide_processed='1' if hide_processed else '0') }}">尾页</a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endif %}
+
 {% if session.get('role') in ['admin', 'teacher'] %}
 <div class="mt-5">
     <h5 class="mb-3 text-muted">请假审批</h5>

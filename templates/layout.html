@@ -19,12 +19,21 @@
         .wrapper {
             flex: 1;
             display: flex;
+            transition: all 0.25s ease;
         }
         .sidebar {
             width: 250px;
             background-color: #f8f9fa;
             padding: 1rem;
             border-right: 1px solid #dee2e6;
+            transition: width 0.25s ease, padding 0.2s ease, opacity 0.2s ease;
+            overflow: hidden;
+        }
+        body.sidebar-collapsed .sidebar {
+            width: 0;
+            padding: 0;
+            border-right: none;
+            opacity: 0;
         }
         .content {
             flex: 1;
@@ -65,11 +74,23 @@
             margin-right: 8px;
             font-size: 1.1em;
         }
+        .sidebar-toggle {
+            border: none;
+            background: transparent;
+            color: #fff;
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
+        }
+        .sidebar-toggle:focus { outline: none; }
     </style>
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
+            <button class="sidebar-toggle d-none d-lg-inline" type="button" aria-label="切换导航" title="切换导航">
+                <i class="bi bi-layout-sidebar-inset"></i>
+            </button>
             <a class="navbar-brand" href="{{ url_for('index') }}">🏫 学生管理系统</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -100,7 +121,7 @@
             <ul class="nav flex-column">
                 <li class="nav-item">
                     <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
-                        <span class="emoji">📊</span>仪表盘
+                        <span class="emoji">📊</span>首页
                     </a>
                 </li>
                 <!-- 在导航栏中添加 -->
@@ -223,7 +244,7 @@
 
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2023 学生管理系统. All rights reserved.</p>
+            <p>&copy; 2025 学生管理系统. 许 钰 峰.</p>
         </div>
     </footer>
 
@@ -239,6 +260,12 @@
                     }
                 });
             });
+            const toggleBtn = document.querySelector('.sidebar-toggle');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', () => {
+                    document.body.classList.toggle('sidebar-collapsed');
+                });
+            }
         });
     </script>
     {% block extra_js %}{% endblock %}

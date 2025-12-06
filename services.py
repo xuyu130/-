@@ -265,6 +265,55 @@ class StudentService(BaseService):
             
         except Exception as e:
             return False, None, f'创建学生时发生错误: {str(e)}'
+
+    def import_students_from_csv(self, file_stream) -> Dict[str, Any]:
+        """从CSV批量导入学生，期望UTF-8带表头。
+        必填: name, gender, age, student_id; 可选: contact_phone, family_info, class_name, homeroom_teacher
+        """
+        import csv
+
+        reader = csv.DictReader(file_stream)
+        required = ['name', 'gender', 'age', 'student_id']
+        results = {
+            'total': 0,
+            'success': 0,
+            'failed': 0,
+            'errors': []
+        }
+
+        # 校验表头
+        if not reader.fieldnames:
+            results['errors'].append('文件为空或缺少表头')
+            results['failed'] = 1
+            return results
+
+        missing = [col for col in required if col not in reader.fieldnames]
+        if missing:
+            results['errors'].append(f'缺少必填列: {", ".join(missing)}')
+            results['failed'] = 1
+            return results
+
+        for idx, row in enumerate(reader, start=2):  # 从第2行开始（跳过表头）
+            results['total'] += 1
+            student_data = {
+                'name': row.get('name', '').strip(),
+                'gender': row.get('gender', '').strip(),
+                'age': row.get('age', '').strip(),
+                'student_id': row.get('student_id', '').strip(),
+                'contact_phone': row.get('contact_phone', '').strip(),
+                'family_info': row.get('family_info', '').strip(),
+                'class_name': row.get('class_name', '').strip(),
+                'homeroom_teacher': row.get('homeroom_teacher', '').strip()
+            }
+
+            success, _, message = self.create_student(student_data)
+            if success:
+                results['success'] += 1
+            else:
+                results['failed'] += 1
+                results['errors'].append(f'第{idx}行: {message}')
+
+        return results
     
     def update_student(self, student_id: int, student_data: Dict[str, Any]) -> Tuple[bool, Optional[Student], str]:
         """更新学生"""

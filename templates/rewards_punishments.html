@@ -64,6 +64,29 @@
     </table>
 </div>
 
+{% set pagination_endpoint = 'my_rewards_punishments' if is_student_view else 'rewards_punishments' %}
+{% if total_pages > 1 %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+    <div class="text-muted">第 {{ page }} / {{ total_pages }} 页 · 共 {{ total_records }} 条记录</div>
+    <div>
+        <ul class="pagination mb-0">
+            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for(pagination_endpoint, page=1) }}">首页</a>
+            </li>
+            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for(pagination_endpoint, page=page-1 if page > 1 else 1) }}">上一页</a>
+            </li>
+            <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for(pagination_endpoint, page=page+1 if page < total_pages else total_pages) }}">下一页</a>
+            </li>
+            <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for(pagination_endpoint, page=total_pages) }}">尾页</a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endif %}
+
 <!-- 添加奖惩记录模态框 -->
 {% if session.get('role') in ['admin', 'teacher'] %}
 <div class="modal fade" id="addRewardPunishmentModal" tabindex="-1" aria-labelledby="addRewardPunishmentModalLabel" aria-hidden="true">

@@ -73,6 +73,28 @@
     </table>
 </div>
 
+{% if total_pages > 1 %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+    <div class="text-muted">第 {{ page }} / {{ total_pages }} 页 · 共 {{ total_records }} 名用户</div>
+    <div>
+        <ul class="pagination mb-0">
+            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('users', page=1) }}">首页</a>
+            </li>
+            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('users', page=page-1 if page > 1 else 1) }}">上一页</a>
+            </li>
+            <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('users', page=page+1 if page < total_pages else total_pages) }}">下一页</a>
+            </li>
+            <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('users', page=total_pages) }}">尾页</a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endif %}
+
 <!-- 添加用户模态框 -->
 <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">

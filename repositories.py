@@ -15,6 +15,10 @@ class BaseRepository(Generic[T]):
         self.data = self._load_data()
         self.table_name = self.__class__.__name__.replace('Repository', '').lower() + 's'
         self._lock = threading.Lock()
+
+        # When users manually edit the JSON, keep next_id consistent with existing records.
+        self._ensure_table_exists()
+        self._sync_next_id()
     
     def _load_data(self) -> Dict[str, Any]:
         """从JSON文件加载数据"""
@@ -26,6 +30,17 @@ class BaseRepository(Generic[T]):
                 print(f"Error loading data from {self.data_file}: {e}")
                 return {'in_memory_data': {}, 'next_id': {}}
         return {'in_memory_data': {}, 'next_id': {}}
+
+    def _sync_next_id(self):
+        """Ensure next_id is at least max existing id + 1 after manual edits."""
+        in_memory = self.data.get('in_memory_data', {})
+        table_data = in_memory.get(self.table_name, [])
+        max_id = max((item.get('id', 0) for item in table_data), default=0)
+
+        current_next = self.data.get('next_id', {}).get(self.table_name, 1)
+        # If manual additions use higher IDs, bump next_id forward.
+        if max_id >= current_next:
+            self.data.setdefault('next_id', {})[self.table_name] = max_id + 1
     
     def save_data(self):
         """保存数据到JSON文件 - 简洁版本"""
@@ -57,6 +72,10 @@ class BaseRepository(Generic[T]):
     
     def _ensure_table_exists(self):
         """确保数据表存在"""
+        if 'in_memory_data' not in self.data:
+            self.data['in_memory_data'] = {}
+        if 'next_id' not in self.data:
+            self.data['next_id'] = {}
         if self.table_name not in self.data['in_memory_data']:
             self.data['in_memory_data'][self.table_name] = []
     

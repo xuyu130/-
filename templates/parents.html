@@ -20,11 +20,11 @@
         <form method="GET" class="row g-3">
             <div class="col-md-5">
                 <label for="searchName" class="form-label">学生姓名</label>
-                <input type="text" class="form-control" id="searchName" name="name" placeholder="请输入学生姓名" value="{{ request.args.get('name', '') }}">
+                <input type="text" class="form-control" id="searchName" name="name" placeholder="请输入学生姓名" value="{{ search_name or '' }}">
             </div>
             <div class="col-md-5">
                 <label for="searchStudentId" class="form-label">学号</label>
-                <input type="text" class="form-control" id="searchStudentId" name="student_id" placeholder="请输入学号" value="{{ request.args.get('student_id', '') }}">
+                <input type="text" class="form-control" id="searchStudentId" name="student_id" placeholder="请输入学号" value="{{ search_student_id or '' }}">
             </div>
             <div class="col-md-2 d-flex align-items-end">
                 <div class="btn-group" role="group">
@@ -88,6 +88,28 @@
         </tbody>
     </table>
 </div>
+
+{% if total_pages > 1 %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+    <div class="text-muted">第 {{ page }} / {{ total_pages }} 页 · 共 {{ total_records }} 条记录</div>
+    <div>
+        <ul class="pagination mb-0">
+            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('parents', page=1, name=search_name, student_id=search_student_id) }}">首页</a>
+            </li>
+            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('parents', page=page-1 if page > 1 else 1, name=search_name, student_id=search_student_id) }}">上一页</a>
+            </li>
+            <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('parents', page=page+1 if page < total_pages else total_pages, name=search_name, student_id=search_student_id) }}">下一页</a>
+            </li>
+            <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('parents', page=total_pages, name=search_name, student_id=search_student_id) }}">尾页</a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endif %}
 
 <!-- 在家长列表表格之后添加新的通信功能区域 -->
 {% if session.get('role') in ['admin', 'teacher'] %}

@@ -104,17 +104,6 @@
                 "homeroom_teacher": "赵老师"
             },
             {
-                "id": 6,
-                "name": "学生006",
-                "gender": "女",
-                "age": 15,
-                "student_id": "S20230006",
-                "contact_phone": "13810000006",
-                "family_info": "",
-                "class_name": "高一(2)班",
-                "homeroom_teacher": "赵老师"
-            },
-            {
                 "id": 7,
                 "name": "学生007",
                 "gender": "男",
@@ -1430,54 +1419,6 @@
                 "date": "2025-11-28 16:00:00",
                 "target": "",
                 "sender": "校长办公室"
-            },
-            {
-                "id": 5,
-                "title": "1",
-                "content": "1",
-                "target": "parent_1",
-                "sender": "admin",
-                "date": "2025-12-05 16:43:08"
-            },
-            {
-                "id": 6,
-                "title": "1",
-                "content": "1",
-                "target": "parent_2",
-                "sender": "admin",
-                "date": "2025-12-05 16:43:08"
-            },
-            {
-                "id": 7,
-                "title": "1",
-                "content": "1",
-                "target": "parent_3",
-                "sender": "admin",
-                "date": "2025-12-05 16:43:08"
-            },
-            {
-                "id": 8,
-                "title": "1",
-                "content": "1",
-                "target": "parent_4",
-                "sender": "admin",
-                "date": "2025-12-05 16:43:09"
-            },
-            {
-                "id": 9,
-                "title": "1",
-                "content": "1",
-                "target": "parent_5",
-                "sender": "admin",
-                "date": "2025-12-05 16:43:09"
-            },
-            {
-                "id": 10,
-                "title": "1",
-                "content": "1",
-                "target": "parent_5",
-                "sender": "admin",
-                "date": "2025-12-05 16:43:13"
             }
         ],
         "schedules": [
@@ -1553,6 +1494,13 @@
                 "type": "punishment",
                 "description": "迟到三次以上，警告处分",
                 "date": "2025-11-20"
+            },
+            {
+                "id": 4,
+                "student_id": 6,
+                "type": "reward",
+                "description": "1",
+                "date": "2025-12-06"
             }
         ],
         "attendances": [
@@ -1601,15 +1549,15 @@
         "leaverequests": []
     },
     "next_id": {
-        "users": 9,
-        "students": 6,
+        "users": 10,
+        "students": 101,
         "courses": 8,
         "enrollments": 13,
         "attendance": 11,
         "parents": 6,
         "notices": 11,
         "schedules": 6,
-        "rewardpunishments": 4,
+        "rewardpunishments": 5,
         "attendances": 6,
         "leaverequests": 3
     }

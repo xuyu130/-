@@ -28,16 +28,16 @@
             <div class="col-md-4">
                 <label for="search" class="form-label">搜索</label>
                 <input type="text" class="form-control" id="search" name="search" 
-                       placeholder="搜索标题或内容..." value="{{ request.args.get('search', '') }}">
+                       placeholder="搜索标题或内容..." value="{{ search or '' }}">
             </div>
             <div class="col-md-4">
                 <label for="target" class="form-label">目标对象筛选</label>
                 <select class="form-select" id="target" name="target">
                     <option value="">所有目标</option>
-                    <option value="" {% if request.args.get('target') == '' %}selected{% endif %}>所有用户</option>
-                    <option value="students" {% if request.args.get('target') == 'students' %}selected{% endif %}>学生</option>
-                    <option value="teachers" {% if request.args.get('target') == 'teachers' %}selected{% endif %}>教师</option>
-                    <option value="admins" {% if request.args.get('target') == 'admins' %}selected{% endif %}>管理员</option>
+                    <option value="" {% if target_filter == '' %}selected{% endif %}>所有用户</option>
+                    <option value="students" {% if target_filter == 'students' %}selected{% endif %}>学生</option>
+                    <option value="teachers" {% if target_filter == 'teachers' %}selected{% endif %}>教师</option>
+                    <option value="admins" {% if target_filter == 'admins' %}selected{% endif %}>管理员</option>
                 </select>
             </div>
             <div class="col-md-4">
@@ -136,6 +136,28 @@
         </tbody>
     </table>
 </div>
+
+{% if total_pages > 1 %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+    <div class="text-muted">第 {{ page }} / {{ total_pages }} 页 · 共 {{ total_records }} 条通知</div>
+    <div>
+        <ul class="pagination mb-0">
+            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('notices', page=1, search=search, target=target_filter) }}">首页</a>
+            </li>
+            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('notices', page=page-1 if page > 1 else 1, search=search, target=target_filter) }}">上一页</a>
+            </li>
+            <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('notices', page=page+1 if page < total_pages else total_pages, search=search, target=target_filter) }}">下一页</a>
+            </li>
+            <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('notices', page=total_pages, search=search, target=target_filter) }}">尾页</a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endif %}
 
 <!-- 添加通知模态框 -->
 {% if session.get('role') in ['admin', 'teacher'] %}

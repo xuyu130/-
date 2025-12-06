@@ -122,6 +122,8 @@ def setup_routes(app, service_manager):
         # 获取查询参数
         class_filter = request.args.get('class', '')
         search_query = request.args.get('search', '')
+        page = request.args.get('page', 1, type=int) or 1
+        page_size = 10
         
         # 获取所有学生
         all_students = student_service.get_all_students()
@@ -138,10 +140,25 @@ def setup_routes(app, service_manager):
         if search_query:
             all_students = [s for s in all_students if search_query.lower() in s.name.lower()]
         
-        students = sorted(all_students, key=lambda x: x.student_id)
-        return render_template('students.html', students=[s.to_dict() for s in students], 
-                              class_filter=class_filter, search_query=search_query, 
-                              unique_classes=unique_classes)
+        students_sorted = sorted(all_students, key=lambda x: x.student_id)
+        total_students = len(students_sorted)
+        total_pages = (total_students + page_size - 1) // page_size if total_students else 1
+        page = max(1, min(page, total_pages))
+        start = (page - 1) * page_size
+        end = start + page_size
+        students_page = students_sorted[start:end]
+
+        return render_template(
+            'students.html',
+            students=[s.to_dict() for s in students_page],
+            class_filter=class_filter,
+            search_query=search_query,
+            unique_classes=unique_classes,
+            page=page,
+            total_pages=total_pages,
+            total_students=total_students,
+            page_size=page_size,
+        )
 
     @app.route('/students/add', methods=['POST'])
     @teacher_or_admin_required
@@ -218,6 +235,52 @@ def setup_routes(app, service_manager):
             flash(f'删除学生时发生错误: {str(e)}', 'danger')
         
         return redirect(url_for('students'))
+
+    @app.route('/students/import', methods=['POST'])
+    @teacher_or_admin_required
+    def import_students():
+        """从CSV批量导入学生，UTF-8，带表头"""
+        file = request.files.get('file')
+        if not file or file.filename == '':
+            flash('请选择要上传的CSV文件。', 'warning')
+            return redirect(url_for('students'))
+
+        try:
+            text_stream = io.TextIOWrapper(file.stream, encoding='utf-8')
+            result = service_manager.student_service.import_students_from_csv(text_stream)
+            g.data_modified = result.get('success', 0) > 0
+
+            flash(f"导入完成：成功 {result.get('success', 0)}/{result.get('total', 0)} 行，失败 {result.get('failed', 0)} 行。", 
+                  'success' if result.get('failed', 0) == 0 else 'info')
+
+            if result.get('errors'):
+                # 仅展示前5条错误以避免刷屏
+                preview = '\n'.join(result['errors'][:5])
+                flash(f"错误详情（前5条）：\n{preview}", 'warning')
+        except Exception as e:
+            flash(f'导入失败：{str(e)}', 'danger')
+        finally:
+            try:
+                file.close()
+            except Exception:
+                pass
+
+        return redirect(url_for('students'))
+
+    @app.route('/students/import/template')
+    @teacher_or_admin_required
+    def download_student_import_template():
+        """下载学生导入CSV模板"""
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(['name', 'gender', 'age', 'student_id', 'contact_phone', 'family_info', 'class_name', 'homeroom_teacher'])
+        writer.writerow(['张三', '男', '15', 'S001', '13800000000', '父亲：张大山，母亲：李小花', '三年二班', '李老师'])
+        writer.writerow(['李四', '女', '16', 'S002', '13800000001', '父亲：李大山，母亲：王小花', '三年三班', '王老师'])
+
+        response = make_response(output.getvalue())
+        response.headers['Content-Disposition'] = 'attachment; filename=students_template.csv'
+        response.headers['Content-Type'] = 'text/csv; charset=utf-8'
+        return response
 
     # === 课程管理路由 ===
     @app.route('/enrollment_status/toggle', methods=['POST'])
@@ -541,9 +604,11 @@ def setup_routes(app, service_manager):
         # 按日期和姓名排序（最新在前）
         attendance_records = sorted(attendance_records, key=lambda x: (x['date'], x['student_name']), reverse=True)
         
-        # 获取查询参数进行筛选
+        # 获取查询参数进行筛选和分页
         start_date = request.args.get('start_date', '')
         end_date = request.args.get('end_date', '')
+        page = request.args.get('page', 1, type=int) or 1
+        page_size = 10
         
         # 根据日期范围筛选
         filtered_records = attendance_records
@@ -553,6 +618,13 @@ def setup_routes(app, service_manager):
             filtered_records = [r for r in attendance_records if start_date <= r['date']]
         elif end_date:
             filtered_records = [r for r in attendance_records if r['date'] <= end_date]
+
+        total_records = len(filtered_records)
+        total_pages = (total_records + page_size - 1) // page_size if total_records else 1
+        page = max(1, min(page, total_pages))
+        start = (page - 1) * page_size
+        end = start + page_size
+        paginated_records = filtered_records[start:end]
         
         # 请假审批列表（仅教师/管理员）
         hide_processed = request.args.get('hide_processed', '1') == '1'
@@ -579,12 +651,16 @@ def setup_routes(app, service_manager):
         students = sorted(student_service.get_all_students(), key=lambda x: x.name)
         
         return render_template('attendance.html', 
-                    attendance_records=filtered_records, 
+                    attendance_records=paginated_records,
                     students=[s.to_dict() for s in students],
                     start_date=start_date,
                     end_date=end_date,
                     leaves=leaves,
-                    hide_processed=hide_processed)
+                    hide_processed=hide_processed,
+                    page=page,
+                    total_pages=total_pages,
+                    total_records=total_records,
+                    page_size=page_size)
 
     @app.route('/attendance/add', methods=['POST'])
     @teacher_or_admin_required
@@ -792,6 +868,14 @@ def setup_routes(app, service_manager):
                 records.append(record_data)
         
         records = sorted(records, key=lambda x: (x['date'], x['student_name']), reverse=True)
+        page = request.args.get('page', 1, type=int) or 1
+        page_size = 10
+        total_records = len(records)
+        total_pages = (total_records + page_size - 1) // page_size if total_records else 1
+        page = max(1, min(page, total_pages))
+        start = (page - 1) * page_size
+        end = start + page_size
+        records_page = records[start:end]
         
         # 获取学生列表用于下拉选择
         students = sorted(student_service.get_all_students(), key=lambda x: x.name)
@@ -800,9 +884,13 @@ def setup_routes(app, service_manager):
         today = datetime.date.today().strftime('%Y-%m-%d')
         
         return render_template('rewards_punishments.html', 
-                            records=records, 
-                            students=[s.to_dict() for s in students],
-                            today=today)
+                    records=records_page, 
+                    students=[s.to_dict() for s in students],
+                    today=today,
+                    page=page,
+                    total_pages=total_pages,
+                    total_records=total_records,
+                    page_size=page_size)
 
     @app.route('/rewards_punishments/add', methods=['POST'])
     @teacher_or_admin_required
@@ -889,10 +977,22 @@ def setup_routes(app, service_manager):
         
         records = rp_service.get_student_records(current_user.student_info_id)
         records = sorted(records, key=lambda x: x.date, reverse=True)
+        page = request.args.get('page', 1, type=int) or 1
+        page_size = 10
+        total_records = len(records)
+        total_pages = (total_records + page_size - 1) // page_size if total_records else 1
+        page = max(1, min(page, total_pages))
+        start = (page - 1) * page_size
+        end = start + page_size
+        records_page = records[start:end]
         
         return render_template('rewards_punishments.html', 
-                            records=[r.to_dict() for r in records], 
-                            is_student_view=True)
+                    records=[r.to_dict() for r in records_page], 
+                    is_student_view=True,
+                    page=page,
+                    total_pages=total_pages,
+                    total_records=total_records,
+                    page_size=page_size)
 
     @app.route('/rewards_punishments/statistics')
     @teacher_or_admin_required
@@ -943,13 +1043,27 @@ def setup_routes(app, service_manager):
             parents_list.append(parent_data)
         
         parents_list = sorted(parents_list, key=lambda x: (x['student_name'], x['relationship']))
+        page = request.args.get('page', 1, type=int) or 1
+        page_size = 10
+        total_records = len(parents_list)
+        total_pages = (total_records + page_size - 1) // page_size if total_records else 1
+        page = max(1, min(page, total_pages))
+        start = (page - 1) * page_size
+        end = start + page_size
+        parents_page = parents_list[start:end]
         
         # 获取学生列表用于模态框中的下拉选择
         students = sorted(student_service.get_all_students(), key=lambda x: x.name)
         
         return render_template('parents.html', 
-                            parents=parents_list, 
-                            students=[s.to_dict() for s in students])
+                    parents=parents_page, 
+                    students=[s.to_dict() for s in students],
+                    search_name=search_name,
+                    search_student_id=search_student_id,
+                    page=page,
+                    total_pages=total_pages,
+                    total_records=total_records,
+                    page_size=page_size)
 
     @app.route('/parents/add', methods=['POST'])
     @teacher_or_admin_required
@@ -1053,9 +1167,24 @@ def setup_routes(app, service_manager):
             notices_list = [n for n in notices_list if n.target == target_filter]
         
         notices_list = sorted(notices_list, key=lambda x: x.date, reverse=True)
+        page = request.args.get('page', 1, type=int) or 1
+        page_size = 10
+        total_records = len(notices_list)
+        total_pages = (total_records + page_size - 1) // page_size if total_records else 1
+        page = max(1, min(page, total_pages))
+        start = (page - 1) * page_size
+        end = start + page_size
+        notices_page = notices_list[start:end]
+
         return render_template('notices.html', 
-                            notices=[n.to_dict() for n in notices_list], 
-                            user_role=user_role)
+                    notices=[n.to_dict() for n in notices_page], 
+                    user_role=user_role,
+                    search=search,
+                    target_filter=target_filter,
+                    page=page,
+                    total_pages=total_pages,
+                    total_records=total_records,
+                    page_size=page_size)
 
     @app.route('/notices/add', methods=['POST'])
     @teacher_or_admin_required
@@ -1139,6 +1268,14 @@ def setup_routes(app, service_manager):
         
         # 获取所有用户
         users_list = sorted(user_service.get_all_users(), key=lambda x: x.username)
+        page = request.args.get('page', 1, type=int) or 1
+        page_size = 10
+        total_records = len(users_list)
+        total_pages = (total_records + page_size - 1) // page_size if total_records else 1
+        page = max(1, min(page, total_pages))
+        start = (page - 1) * page_size
+        end = start + page_size
+        users_page = users_list[start:end]
         
         # 获取所有学生用于下拉选择
         students_list = sorted(student_service.get_all_students(), key=lambda x: x.name)
@@ -1151,9 +1288,13 @@ def setup_routes(app, service_manager):
         print(f"📊 路由调试: 用户数量={len(users_list)}, 学生数量={len(students_list)}")
         
         return render_template('users.html', 
-                            users=[u.to_dict() for u in users_list], 
-                            students=[s.to_dict() for s in students_list],
-                            students_dict=students_dict)
+                    users=[u.to_dict() for u in users_page], 
+                    students=[s.to_dict() for s in students_list],
+                    students_dict=students_dict,
+                    page=page,
+                    total_pages=total_pages,
+                    total_records=total_records,
+                    page_size=page_size)
 
     @app.route('/users/add', methods=['POST'])
     @admin_required
@@ -1517,7 +1658,7 @@ def setup_routes(app, service_manager):
         output.seek(0)
         response = make_response(output.getvalue())
         response.headers['Content-Disposition'] = f'attachment; filename=statistics_export_{datetime.date.today().strftime("%Y%m%d")}.csv'
-        response.headers['Content-type'] = 'text/csv'
+        response.headers['Content-type'] = 'text/csv; charset=utf-8'
         return response
 
     @app.route('/stu_statistics')
